@@ -1,0 +1,30 @@
+# find square of even numbers only
+
+filter: (A -> B) x L(A) -> L(A)
+map: (A -> B) x L(A) -> L(B)
+
+filter(f, xs[]) ->
+    if xs = []:
+        ret []
+    elif f(xs[0]):
+        ret [xs[0]] + filter(f, xs[1:])
+    else:
+        ret filter(f, xs[1:])
+
+map(f, xs[]) ->
+    if xs = []:
+        ret []
+    ret [f(xs[0])] + map(f, xs[1:])
+
+is_even(n) ->
+    n % 2 = 0
+
+square(n) ->
+    n * n
+
+numbers[] in N = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+even_numbers[] in N = filter(is_even, numbers)
+squared[] in N = map(square, even_numbers)
+
+print(squared)
+

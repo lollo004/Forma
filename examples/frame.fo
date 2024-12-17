@@ -1,0 +1,66 @@
+split_string: S x A x S -> S[]
+strlen: S -> N
+max: N[] -> N
+print_frame: S[] -> None
+
+strlen(s) ->
+        """
+        Calculates the length of a string.
+        """
+        if s = "" -> ret 0
+        ret 1 + strlen(s[1:])
+
+split_string(s, delim, curr) ->
+        """
+        Splits a string `s` into a list of substrings, using the ascii `delim` as a delimiter.
+
+        Parameters:
+        s : str - The string to split
+        delim : ascii - The character used as a delimiter
+        curr : str - The current substring being built
+
+        Returns:
+        List of substrings
+        """
+        if s = "":
+                ret [curr]
+        elif s[0] = delim:
+                if curr = "":
+                        ret split_string(s[1:], delim, "")
+                else:
+                        ret [curr] + split_string(s[1:], delim, "")
+        else:   
+                ret split_string(s[1:], delim, curr + s[0])
+
+max(ns[]) ->
+        """
+        Returns the maximum number in a list of integers.
+        """
+        if ns = []:
+		ret 0
+        elif ns[1:] = []:
+		ret ns[0]
+        rest_max in N = max(ns[1:])
+        if ns[0] > rest_max:
+		ret ns[0]
+        ret rest_max
+
+print_frame(words[]) ->
+        """
+        Prints a rectangular frame of '*' around each word in the list.
+        """
+        lengths[] in N = [strlen(w) forall w in words]
+        max_length in N = max(lengths)
+        border in S = "*" * (max_length + 4)  # 2 spaces + 2 stars
+
+        print(border)  # Top border
+        forall word in words:
+                padding in N = max_length - strlen(word)
+                print("* " + word + " " * padding + " *")
+        print(border)  # Bottom border
+
+
+message in S = input("Please enter sentence: ")
+words[] in S = split_string(message, " ", "")
+print_frame(words)
+

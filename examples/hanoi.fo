@@ -1,0 +1,26 @@
+# Created by lollo004, 17/12/2024 
+
+hanoi: S x S x S -> None
+
+hanoi(src, dst, aux) =
+        """
+        Recursive solution to the Tower of Hanoi problem.
+
+        Parameters:
+        n : int - Number of disks
+        source : str - The starting rod
+        destination : str - The target rod
+        auxiliary : str - The helper rod
+        """
+	if n = 1:	
+		print("..")
+	else:
+                hanoi(n - 1, origin, auxiliary, destination)
+                print("Move disk from " + origin + " to " + destination)
+                hanoi(n - 1, auxiliary, destination, origin)
+
+src in S = "Source"
+dst in S = "Destination"
+aux in S = "Auxiliary"
+
+hanoi(3, src, dst, aux)
