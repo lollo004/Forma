@@ -1,0 +1,9 @@
+map: ( R -> N ) x N[] -> N[];
+
+map ( f, val[] ) => {
+	return [], if val == [],
+	return f(val[0]) + map(f, val[1..]), else;
+}
+
+list: N = [1, 2, 3];
+print map((x: N => x*2), list);

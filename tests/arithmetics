@@ -1,0 +1,12 @@
+val: N = 7;
+print "val=7, val * 5 + 2 = "
+print  val*5+2; 
+
+print "Hello " + "World!";
+
+list: R = [1.5, 0, -1.5];
+
+new_list : R = list + -2.5;
+
+print "[1.5, 0, -1.5] + -2.5 = ";
+print new_list; 
