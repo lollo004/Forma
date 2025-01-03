@@ -40,9 +40,6 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 %option noyywrap noinput nounput yylineno
 %%
 
-"{" { enter_static_scope(_staticstack); return *yytext;}
-"}" { exit_static_scope(_staticstack); return *yytext;}
-
 {NEWLINE} { /* For yylineno debug */ }
 
 {IF} 	{ return _if; }
@@ -51,7 +48,9 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 {IMGR}	{ return imgr; }
 {SET}	{ return set; }
 {LET}	{ return let; }
-{DEF}	{ return def; }
+{DEF}	{ enter_static_scope(_staticstack); return def; }
+"}" { exit_static_scope(_staticstack); return *yytext;}
+
 
 {ARROW}	{ return arrow; }
 

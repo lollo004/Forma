@@ -35,7 +35,7 @@ StaticScopeStack *_staticstack;
 %token integer floating str imgr 
 %token int_var float_var str_var intlist_var floatlist_var strlist_var int_fun float_fun str_fun intlist_fun floatlist_fun strlist_fun <id> new_id
 
-%type <ast> NEWID VDEC
+%type <ast> NEWID VDEC FBARGS ANYID
 
 %right '='
 %left '-' '+'
@@ -59,8 +59,8 @@ STMT:	TERM
     |	FCALL
     |	_return TERM
 
-FDEF:	def NEWID ':' FDECARGS arrow set '[' ']'
-    |	def NEWID ':' FDECARGS arrow set
+FDEF:	NEWID ':' FDECARGS arrow set '[' ']'
+    |	NEWID ':' FDECARGS arrow set
 
 FDECARGS:	FDECARGS '*' set
 	|	FDECARGS '*' set '[' ']'
@@ -69,12 +69,14 @@ FDECARGS:	FDECARGS '*' set
 	|	'(' FDECARGS arrow set ')'
 	|	'(' FDECARGS arrow set '[' ']' ')'
 
-FBODY:	NEWID '(' FBARGS ')' arrow '{' STMTS '}'
+FBODY:	def NEWID '(' FBARGS ')' arrow '{' STMTS '}'
 
-FBARGS:	FBARGS ',' ANYID
-      | FBARGS ',' ANYID '[' ']'
-      | ANYID
-      |	ANYID '[' ']'
+FBARGS:	FBARGS ',' ANYID ':' set 
+      | FBARGS ',' ANYID '[' ']' ':' set
+      | ANYID ':' set {	add_static_symbol(_staticstack, $1->id, TYPE_INT, NATURE_VARIABLE, 0);
+	}
+      |	ANYID '[' ']' ':' set {	add_static_symbol(_staticstack, $1->id, TYPE_INT, NATURE_VARIABLE, 0);
+	}
       | %empty
 
 FCALL:	FUNC '(' FCARGS ')' 
@@ -86,7 +88,7 @@ FCARGS: FCARGS ',' VALUE
 VDEC:	let NEWID ':' SET '=' TERM { 
 	add_static_symbol(_staticstack, $2->id, TYPE_INT, NATURE_VARIABLE, 0);
 	}
-    |	let NEWID ':' '=' TERM
+    // |	let NEWID ':' '=' TERM future impl.
 
 ANYID:	INTVAR | FLOATVAR | STRVAR | LISTVAR | FUNC | NEWID
 VALUE:	NUMERIC | STRING | LIST /* A value is known to be existing in this static scope */

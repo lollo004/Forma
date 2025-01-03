@@ -1,0 +1,11 @@
+g_add: N => N;
+
+let g_val : N = 2;
+
+def add(a : N) => {
+ 	return a + g_val;
+};
+
+def main() => {
+	return g_val + a; % receiving error is correct
+}
