@@ -1,12 +1,15 @@
-val: N = 7;
-print "val=7, val * 5 + 2 = "
-print  val*5+2; 
+let val: N = 7;
+print "val=7, val * 5 + 2 = ";
+print  6*5+2; 
 
 print "Hello " + "World!";
 
-list: R = [1.5, 0, -1.5];
+let list: R = [1.5, 0, -1.5];
 
-new_list : R = list + -2.5;
+%  let new_list : R = list + -2.5; % future: check list will be recognized as existing 
+%  let new_list : R = [1, 2] + -2.5; % should be error bc -2.5 is a num
+let new_list : R = [1 , 2] + [-2.5]; % should be ok
 
-print "[1.5, 0, -1.5] + -2.5 = ";
-print new_list; 
+print "[1.5, 0, -1.5] + -2.5 = "; 
+
+% print new_list; % yes this gives error bc new_list is not defined. 

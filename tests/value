@@ -1,0 +1,13 @@
+let real_num: R = 3.14;
+
+let auto:= 3;
+
+let natural_num: N = 3;
+
+let string: N = "Hello world! S N R %";
+
+let complex: C = 2 I+ real_num;
+
+% lists
+
+let list: N = [1, 2, 3, 4];
