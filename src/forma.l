@@ -28,7 +28,8 @@ HEXADECIMAL  		0x[0-9a-fA-F]+
 IF           		if
 ELSE         		else
 RETURN			return
-PRINT			print
+READ			read
+WRITE			write
 LET			let
 DEF			def
 IMGR			I
@@ -72,7 +73,7 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
         exit(EXIT_FAILURE);
     	}
     	yylval.real = value;
-    	return floating;
+    	return real;
 }
 {BINARY} {
     	errno = 0;
@@ -109,7 +110,8 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
     	return comp;
 }
 
-{PRINT} { return print; }
+{READ}	{ return _read; }
+{WRITE} { return _write; }
 
 {ID} {
     	// Check if the ID exists in the current scope or above
@@ -121,19 +123,22 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 		case TYPE_INT: return int_var;
 		case TYPE_FLOAT: return float_var;
 		case TYPE_STRING: return str_var;
+		case TYPE_COMPLEX: return cmpx_var;
 		case TYPE_INTLIST: return intlist_var;
 		case TYPE_FLOATLIST: return floatlist_var;
 		case TYPE_STRINGLIST: return strlist_var;
-
+		case TYPE_COMPLEXLIST: return cmpxlist_var;
 	}}
 	else {
 		switch(id->type){
 		case TYPE_INT: return int_fun;
 		case TYPE_FLOAT: return float_fun;
 		case TYPE_STRING: return str_fun;
+		case TYPE_COMPLEX: return cmpx_fun;
 		case TYPE_INTLIST: return intlist_fun;
 		case TYPE_FLOATLIST: return floatlist_fun;
 		case TYPE_STRINGLIST: return strlist_fun;
+		case TYPE_COMPLEXLIST: return cmpxlist_fun;
 	}
 	}
 }

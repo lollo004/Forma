@@ -11,9 +11,11 @@ typedef enum {
     TYPE_INT,
     TYPE_FLOAT,
     TYPE_STRING,
+    TYPE_COMPLEX,
     TYPE_INTLIST,
     TYPE_FLOATLIST,
-    TYPE_STRINGLIST
+    TYPE_STRINGLIST,
+    TYPE_COMPLEXLIST
 } SymbolType;
 
 // Enumeration for symbol nature
@@ -45,6 +47,7 @@ typedef struct StaticScopeStack {
 } StaticScopeStack;
 
 // Function declarations
+SymbolType set_to_enumtype(char set, bool islist);
 StaticScopeStack *create_static_scope_stack(int capacity);
 void destroy_static_scope_stack(StaticScopeStack *stack);
 void enter_static_scope(StaticScopeStack *stack);

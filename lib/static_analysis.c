@@ -4,6 +4,28 @@
 #include <stdlib.h>
 #include <string.h>
 
+SymbolType set_to_enumtype(char set, bool islist){
+	if (!islist){
+		switch(set){
+		case 'N': return TYPE_INT; // yes, naturals are fake
+		case 'I': return TYPE_INT;
+		case 'R': return TYPE_FLOAT;
+		case 'S': return TYPE_STRING;
+		case 'C': return TYPE_COMPLEX;
+		}
+	}
+	else {
+		switch(set){
+		case 'N': return TYPE_INTLIST; // yes, naturals are fake
+		case 'I': return TYPE_INTLIST;
+		case 'R': return TYPE_FLOATLIST;
+		case 'S': return TYPE_STRINGLIST;
+		case 'C': return TYPE_COMPLEXLIST;
+		}
+	}
+	return 0;
+}
+
 // Hash function for symbol names
 static unsigned int hash(const char *name) {
     unsigned int hash = 0;

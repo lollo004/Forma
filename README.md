@@ -1,13 +1,13 @@
 # Forma
 Forma is a functional statically typed programming language written for Compiler Construction exam project.
 
-TODO:
-Static analysis type check (now only TYPE\_INT as default.
+TODO-FUTURE:
+function call arguments type match
+bodycall return statement match
 
-? Function declarations are useless right now.
+TODO:
 
 LAST: Integration of abstract tree construction.
 
-function return type control in static analysis (only variables right now)
 
 
