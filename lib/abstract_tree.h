@@ -12,6 +12,7 @@ struct ast {
         double _Complex compx;
         char *str;
         char *id;
+	char ch;
 	IntLinkedList *ilist;
         DoubleLinkedList *flist;
         ComplexLinkedList *clist;
@@ -26,7 +27,7 @@ ast_t *node1(int type, ast_t *c1);
 ast_t *node2(int type, ast_t *c1, ast_t *c2); 
 ast_t *node3(int type, ast_t *c1, ast_t *c2, ast_t *c3);
 
-void print_ast(ast_t *t, int deep); 
+void print_ast(ast_t *t, int deep, const char *prefix); 
 
 int validate(ast_t *t);
 int optimize(ast_t *t);

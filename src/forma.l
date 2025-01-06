@@ -15,9 +15,13 @@ extern StaticScopeStack *_staticstack;
 %x STRING_MODE COMMENT_MODE
 
 /* Token Regex */
+HEADER			"#Forma"
 INTEGER      		[0-9]+
 FLOATING        	[0-9]+\.[0-9]+
-COMP        		==|!=|<=|>=|<|>
+EQ			==
+NEQ			!=
+MINE			<=
+GRTE			>=
 ARROW			=>
 COMMENT			%
 STRING_DELIMITER     	\"
@@ -43,6 +47,7 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 
 {NEWLINE} { /* For yylineno debug */ }
 
+{HEADER}	{ return _header; }
 {IF} 	{ return _if; }
 {ELSE} 	{ return _else; }
 {RETURN}	{ return _return; }
@@ -52,7 +57,10 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 {DEF}	{ enter_static_scope(_staticstack); return def; }
 "}" { exit_static_scope(_staticstack); return *yytext;}
 
-
+{EQ}	{ return eq; }
+{NEQ}	{ return neq; }
+{MINE}	{ return mine; }
+{GRTE}	{ return grte; }
 {ARROW}	{ return arrow; }
 
 {INTEGER} { /* Numeric Literals */
@@ -104,10 +112,6 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
     	}
     	yylval.integer = value;
     	return integer;
-}
-{COMP} {
-    	yylval.id = strdup(yytext);
-    	return comp;
 }
 
 {READ}	{ return _read; }
