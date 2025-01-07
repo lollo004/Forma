@@ -29,6 +29,7 @@ STRING_ESCAPE        	\\\"
 BINARY       		0b[01]+
 OCTAL        		0o[0-7]+
 HEXADECIMAL  		0x[0-9a-fA-F]+
+DO			do
 IF           		if
 ELSE         		else
 RETURN			return
@@ -50,6 +51,7 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 {HEADER}	{ return _header; }
 {IF} 	{ return _if; }
 {ELSE} 	{ return _else; }
+{DO}	{ return _do; }
 {RETURN}	{ return _return; }
 {IMGR}	{ return imgr; }
 {SET}	{ return set; }

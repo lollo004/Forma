@@ -6,9 +6,11 @@ function call arguments type match
 function return statement match type
 
 TODO:
-- Manage to make function declaration usefull, remove type param specification from function definition ?
-- Test ifelse statement on "functions" test
-- Allow functions as function parameters in: function dec, body def, function call
+- Manage to make function declaration usefull, remove type param specification from function definition: TODO TEST
+- Invent a better if statement
+- Allow functions as function parameters in: function dec, body def, function call: TODO TEST
+
+- Solve SET ambiguity with lists
 
 - Abstract tree construction Execution.
 

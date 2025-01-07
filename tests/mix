@@ -4,11 +4,11 @@ g_add: N => N;
 
 let g_val : N = 2;
 
-def g_add(a : N) => {
+def g_add(a : N) => N = {
  	return a + g_val;
 };
 
-def main() => {
+def main() => N = {
 	let b: N = 2;
-	return a + g_add(b);
+	return g_add(b);
 };
