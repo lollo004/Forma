@@ -10,5 +10,5 @@ def g_add(a : N) => {
 
 def main() => {
 	let b: N = 2;
-	return g_add(b);
+	return a + g_add(b);
 };

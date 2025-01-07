@@ -18,14 +18,15 @@ StaticScopeStack *_staticstack;
 
 // LADD LCMP LSLICE 
 enum {	STMTS = 1000, 
-	FDEF=1100, FPARAMS=1101, FPARAM=1102, FCALL=1110, FARGS=1111, FARG=1112, 
+	FDEF=1100, FPARAMS=1101, FPARAM=1102, FCALL=1110, FARGS=1111, FARGV=1112, FARGF=1113, 
 	VDEC=1200,
 	LADD=1300, LEQ=1310, LNEQ=1311, LSLICE=1320, ELIST=1330, ILIST=1331, FLIST=1332, CLIST=1333, SLIST=1334,
 	CADD=1400, CMNS=1410,
 	SADD=1500, SEQ=1510, SNEQ=1511, SSLICE=1520,
 	SLICE=1600, SLICER=1601, SLICEL=1602, SLICEI=1603,
 	NADD=1700, NMNS=1701, NMUL=1702, NDIV=1703, NPOW=1704, 
-	NEQ=1710, NNEQ=1711, NGRT=1712, NMIN=1713, NGRTE=1714, NMINE=1715
+	NEQ=1710, NNEQ=1711, NGRT=1712, NMIN=1713, NGRTE=1714, NMINE=1715,
+	IF=1800, ELSE=1801, IFK=1802
 };
 
 int verbous=1;
@@ -52,7 +53,7 @@ int verbous=1;
 %type <ast> NEWID ANYID INTVAR FLOATVAR STRVAR CMPXVAR ILISTVAR FLISTVAR SLISTVAR CLISTVAR
 %type <ast> INTFUN FLOATFUN STRFUN CMPXFUN ILISTFUN FLISTFUN SLISTFUN CLISTFUN LISTFCALL
 %type <ast> INT FLOAT STR S STMTS STMT TERM FDEF FBODY LISTVAR NTERM STERM CTERM LTERM LIST STRING FUNC IFC FCARGS FFC SFC CFC ILFC FLFC SLFC CLFC VALUE 
-%type <ast> SLICE INARGS FNARGS CNARGS SARGS INTERM FNTERM INUM FNUM
+%type <ast> SLICE INARGS FNARGS CNARGS SARGS INTERM FNTERM INUM FNUM COND
 
 %right '='
 %left '-' '+'
@@ -74,9 +75,14 @@ STMT:	TERM //d
     |	_write CTERM { $$ = node1(_write, $2); }
     |	_write STERM { $$ = node1(_write, $2); }
     |	_read { $$ = node0(_read); }
+    |	'{' COND '}' { $$ = $2; }
     |   VDEC //d
     |   FBODY //d
     |	_return TERM { $$ = node1(_return, $2); }
+
+COND:	STMT ',' _if TERM { $$ = node2(IF, $1, $4); }
+    |	STMT ',' _else { $$ = node1(ELSE, $1); }
+    |	STMT ',' _if TERM ',' COND { $$ = node3(IFK, $1, $4, $6); }
 
 /* BEGIN - Static purpose only */
 FDEF:	NEWID ':' FDECARGS arrow set '[' ']' { add_static_symbol(_staticstack, $1->val.id, set_to_enumtype($5, 1), NATURE_FUNCTION, 0); }
@@ -112,7 +118,8 @@ SLFC: 	strlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
 CLFC:	cmpxlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
 
 FCARGS: FCARGS ',' VALUE { $$ = node2(FARGS, $1, $3); }
-      |	VALUE { $$ = node1(FARG, $1); }
+      |	VALUE { $$ = node1(FARGV, $1); } // arg value
+      | FUNC { $$ = node1(FARGF, $1); } // arg function
       |	%empty { $$ = NULL; };
 
 VDEC:	let new_id ':' SET '=' NTERM { 

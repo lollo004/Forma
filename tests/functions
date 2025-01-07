@@ -1,17 +1,19 @@
-def map: ( N => N ) * N[] => N[];
+map: ( N => N ) * N[] => N[];
 
-map ( f, val[] ) => {
-	return [], if val == [],
-	return f(val[0]) + map(f, val[1:]), else;
+def map ( f, val[] ) => {
+	{
+		return [], if val == [],
+		return f(val[0]) + map(f, val[1:]), else;
+	}
 }
 
-def sum: N * N => N;
+sum: N * N => N;
 
-sum ( x1, x2 ) => {
+def sum ( x1, x2 ) => {
 	return x1 + x2;
 }
 
 let list: N = [1, 2, 3];
 
-print map(sum(2,5), list);
+write map(sum, list);
 % print map((x: N => x*2), list); % not yet implement lambda functions: not critical behaviour!
