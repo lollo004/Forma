@@ -8,19 +8,36 @@ struct ast {
     int type;
     union {
         int integer;
-        double real;
+	SymbolType set;
+	double real;
         double _Complex compx;
         char *str;
         char *id;
-	char ch;
 	IntLinkedList *ilist;
         DoubleLinkedList *flist;
         ComplexLinkedList *clist;
         StringLinkedList *slist;
-    } val;
+    } val1;
+    union {
+        int integer;
+	SymbolType set;
+	double real;
+        double _Complex compx;
+        char *str;
+        char *id;
+	IntLinkedList *ilist;
+        DoubleLinkedList *flist;
+        ComplexLinkedList *clist;
+        StringLinkedList *slist;
+    } val2;
     struct ast *c[MC];
 };
 typedef struct ast ast_t;
+
+// future execution
+struct exval {
+	int type; 
+};
 
 ast_t *node0(int type); 
 ast_t *node1(int type, ast_t *c1); 

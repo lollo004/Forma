@@ -16,7 +16,6 @@ extern void yyerror(const char *msg) {
 
 StaticScopeStack *_staticstack;
 
-// LADD LCMP LSLICE 
 enum {	STMTS = 1000, 
 	FUN=1100, FUNSIG=1099, FPARAMS=1101, FPARAM=1102, FCALL=1110, FARGS=1111, FARGV=1112, FARGF=1113, 
 	VDEC=1200,
@@ -26,8 +25,7 @@ enum {	STMTS = 1000,
 	SLICE=1600, SLICER=1601, SLICEL=1602, SLICEI=1603,
 	NADD=1700, NMNS=1701, NMUL=1702, NDIV=1703, NPOW=1704, 
 	NEQ=1710, NNEQ=1711, NGRT=1712, NMIN=1713, NGRTE=1714, NMINE=1715,
-	IF=1800, ELSE=1801, IFK=1802,
-	SET=1900
+	IF=1800, ELSE=1801
 };
 
 struct fparams {
@@ -60,11 +58,11 @@ static int ASTDEBUG=1;
 %define parse.error detailed
 
 %token <ast> _if _else _return _header _do
-%token let def arrow <ast> _read _write eq neq mine grte <ch> set
+%token let def arrow _read _write eq neq mine grte <ch> set
 %token <integer> integer <real> real <str> str imgr 
 %token <id> int_var float_var str_var cmpx_var intlist_var floatlist_var strlist_var cmpxlist_var int_fun float_fun str_fun cmpx_fun intlist_fun floatlist_fun strlist_fun cmpxlist_fun new_id
 
-%type <ast> VDEC SET
+%type <ast> VDEC
 %type <ast> NEWID ANYID INTVAR FLOATVAR STRVAR CMPXVAR ILISTVAR FLISTVAR SLISTVAR CLISTVAR
 %type <ast> INTFUN FLOATFUN STRFUN CMPXFUN ILISTFUN FLISTFUN SLISTFUN CLISTFUN LISTFCALL
 %type <ast> INT FLOAT STR S STMTS STMT TERM FDEF FBODY LISTVAR NTERM STERM CTERM LTERM LIST STRING FUNC IFC FCARGS FFC SFC CFC ILFC FLFC SLFC CLFC 
@@ -97,9 +95,9 @@ STMT:	TERM //d
     |   FBODY //d
     |	_return TERM { $$ = node1(_return, $2); }
 
-COND:	STMT ',' _if TERM { $$ = node2(IF, $1, $4); }
+COND:	STMT ',' _if TERM { $$ = node3(IF, $1, $4, NULL); }
     |	STMT ',' _else { $$ = node1(ELSE, $1); }
-    |	STMT ',' _if TERM ',' COND { $$ = node3(IFK, $1, $4, $6); }
+    |	STMT ',' _if TERM ',' COND { $$ = node3(IF, $1, $4, $6); }
 
 /* BEGIN - Static purpose only */
 FDEF:	new_id ':' FDECARGS arrow set '[' ']' { 
@@ -128,48 +126,48 @@ FDECARGS:	FDECARGS '*' set {$$ = $1; $$->params[$$->nparams] = set_to_enumtype($
 FBODY:	FBODYS '{' STMTS '}' { $$ = node2(FUN, $1, $3); }
 
 FBODYS:	def FUNC '(' FBARGS ')' { 
-	Symbol *symbol = find_static_symbol(_staticstack, $2->val.id);
+	Symbol *symbol = find_static_symbol(_staticstack, $2->val1.id);
 	if($4 == NULL) {
 		if(symbol->nparams != 0) { 
-			printf("FuncError: %s signature not matching declaration!\n", $2->val.id);return -1;}
+			printf("FuncError: %s signature not matching declaration!\n", $2->val1.id);return -1;}
 		// no params
 		$$ = node1(FUNSIG, NULL);
-		$$->val.id = strdup($2->val.id);
+		$$->val1.id = strdup($2->val1.id);
 	}
 	else if(symbol->nparams != $4->nargs) { 
-		printf("FuncError: %s signature not matching declaration!\n", $2->val.id);return -1;
+		printf("FuncError: %s signature not matching declaration!\n", $2->val1.id);return -1;
 	}
 	else {
 		// signature is matching
 		ast_t **pnodes = malloc(sizeof(ast_t *) * $4->nargs);	
 		add_static_symbol(_staticstack, $4->args[0], symbol->params[0], symbol->natparams[0], 0);
-		ast_t *tmp = node0(SET); tmp->val.integer = symbol->params[0]; 
+		ast_t *tmp = node0(set); tmp->val1.integer = symbol->params[0]; 
 		pnodes[0] = node1(FPARAM, tmp);
-		pnodes[0]->val.id = $4->args[0];
+		pnodes[0]->val1.id = $4->args[0];
 		for(int i=1;i<$4->nargs;i++){
 			add_static_symbol(_staticstack, $4->args[i], symbol->params[i], symbol->natparams[i], 0);
-			ast_t *tmp = node0(set); tmp->val.integer = symbol->params[i];
+			ast_t *tmp = node0(set); tmp->val1.integer = symbol->params[i];
 			pnodes[i] = node2(FPARAMS, tmp, pnodes[i-1]);
-			pnodes[i]->val.id = $4->args[i];
+			pnodes[i]->val1.id = $4->args[i];
 		} // not only variables !!
 		$$ = node1(FUNSIG, pnodes[$4->nargs-1]);
-		$$->val.id = strdup($2->val.id);
+		$$->val1.id = strdup($2->val1.id);
 		free(pnodes);
 	}
 }
 
-FBARGS:	FBARGS ',' ANYID { $$ = $1; $$->args[($$->nargs)++] = $3->val.id;}
-      | ANYID { $$ = calloc(1, sizeof(struct fargs)); $$->args[($$->nargs)++] = $1->val.id; }
+FBARGS:	FBARGS ',' ANYID { $$ = $1; $$->args[($$->nargs)++] = $3->val1.id;}
+      | ANYID { $$ = calloc(1, sizeof(struct fargs)); $$->args[($$->nargs)++] = $1->val1.id; }
       | %empty { $$ = NULL; }
 
-IFC:	int_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
-FFC:	float_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
-SFC:	str_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
-CFC:	cmpx_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
-ILFC:	intlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
-FLFC:	floatlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
-SLFC: 	strlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
-CLFC:	cmpxlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
+IFC:	int_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
+FFC:	float_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
+SFC:	str_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
+CFC:	cmpx_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
+ILFC:	intlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
+FLFC:	floatlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
+SLFC: 	strlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
+CLFC:	cmpxlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
 
 FCARGS: FCARGS ',' TERM { $$ = node2(FARGS, $1, $3); }
       |	FCARGS ',' FUNC { $$ = node2(FARGS, $1, $3); }
@@ -177,18 +175,18 @@ FCARGS: FCARGS ',' TERM { $$ = node2(FARGS, $1, $3); }
       | FUNC { $$ = node1(FARGF, $1); } // arg function
       |	%empty { $$ = NULL; };
 
-VDEC:	let new_id ':' SET '=' NTERM { 
-	add_static_symbol(_staticstack, $2, set_to_enumtype($4->val.ch, 0), NATURE_VARIABLE, 0);
-	$$ = node2(VDEC, $4, $6); $$->val.id = $2; }
-    |	let new_id ':' SET '=' STERM { 
-	add_static_symbol(_staticstack, $2, set_to_enumtype($4->val.ch, 0), NATURE_VARIABLE, 0); 
-	$$ = node2(VDEC, $4, $6); $$->val.id = $2; }
-    |	let new_id ':' SET '=' CTERM { 
-	add_static_symbol(_staticstack, $2, set_to_enumtype($4->val.ch, 0), NATURE_VARIABLE, 0); 
-	$$ = node2(VDEC, $4, $6); $$->val.id = $2; }
-    |	let new_id '[' ']' ':' SET '=' LTERM { 
-	add_static_symbol(_staticstack, $2, set_to_enumtype($6->val.ch, 0), NATURE_VARIABLE, 0); 
-	$$ = node2(VDEC, $6, $8); $$->val.id = $2; }
+VDEC:	let new_id ':' set '=' NTERM { 
+	add_static_symbol(_staticstack, $2, set_to_enumtype($4, 0), NATURE_VARIABLE, 0);
+	$$ = node1(VDEC, $6); $$->val1.id = $2; /*$$->val2.set = set_to_enumtype($4, 0);*/ }
+    |	let new_id ':' set '=' STERM { 
+	add_static_symbol(_staticstack, $2, set_to_enumtype($4, 0), NATURE_VARIABLE, 0); 
+	$$ = node1(VDEC, $6); $$->val1.id = $2; $$->val2.set = set_to_enumtype($4, 0); }
+    |	let new_id ':' set '=' CTERM { 
+	add_static_symbol(_staticstack, $2, set_to_enumtype($4, 0), NATURE_VARIABLE, 0); 
+	$$ = node1(VDEC, $6); $$->val1.id = $2; $$->val2.set = set_to_enumtype($4, 0); }
+    |	let new_id '[' ']' ':' set '=' LTERM { 
+	add_static_symbol(_staticstack, $2, set_to_enumtype($6, 1), NATURE_VARIABLE, 0); 
+	$$ = node1(VDEC, $8); $$->val1.id = $2; $$->val2.set = set_to_enumtype($6, 0); }
 
 ANYID:	INTVAR | FLOATVAR | STRVAR | LISTVAR | FUNC | NEWID
 // VALUE:	INUM | FNUM | CTERM | STRING | LIST 
@@ -205,7 +203,7 @@ LTERM:	LTERM '+' LIST { $$ = node2(LADD, $1, $3); }
      |	LTERM neq LIST { $$ = node2(LNEQ, $1, $3); }
      |	LTERM SLICE { $$ = node2(LSLICE, $1, $2); }
      |	LIST //d
-
+ 
 LIST:	'[' INARGS ']' { $$ = $2; } 
     |	'[' FNARGS ']' { $$ = $2; }
     |	'[' CNARGS ']' { $$ = $2; }
@@ -254,8 +252,8 @@ CTERM:	NTERM imgr '+' NTERM { $$ = node2(CADD, $1, $4); }
 NTERM:	INTERM | FNTERM //d
 /*
 NTERM:	NTERM '-' NUMERIC { $$ = node2('-', $1, $3); }
-     |	'-' NUMERIC { ast_t *z = node0(integer); z->val.integer = 0; $$ = node2('-', z, $2); }
-     |	'+' NUMERIC { ast_t *z = node0(integer); z->val.integer = 0; $$ = node2('+', z, $2); }
+     |	'-' NUMERIC { ast_t *z = node0(integer); z->val1.integer = 0; $$ = node2('-', z, $2); }
+     |	'+' NUMERIC { ast_t *z = node0(integer); z->val1.integer = 0; $$ = node2('+', z, $2); }
      |	NTERM '+' NUMERIC { $$ = node2('+', $1, $3); }
      |	NTERM '*' NUMERIC { $$ = node2('*', $1, $3); }
      |	NTERM '/' NUMERIC { $$ = node2('/', $1, $3); }
@@ -307,31 +305,31 @@ FNTERM: FNTERM '-' FNUM { $$=node2(NMNS, $1, $3); }
 FNUM: FLOAT | FLOATVAR | FFC //d
 
 /* VALUE TOKENS */
-INT:		integer { $$ = node0(integer); $$->val.integer = $1; }
-FLOAT:		real { $$ = node0(real); $$->val.real = $1; }
-STR: 		str { $$ = node0(str); $$->val.str = $1; }
+INT:		integer { $$ = node0(integer); $$->val1.integer = $1; }
+FLOAT:		real { $$ = node0(real); $$->val1.real = $1; }
+STR: 		str { $$ = node0(str); $$->val1.str = $1; }
 
-INTVAR:		int_var { $$ = node0(int_var); $$->val.id = $1; }
-FLOATVAR:	float_var { $$ = node0(float_var); $$->val.id = $1; }
-STRVAR:		str_var { $$ = node0(str_var); $$->val.id = $1; }
-CMPXVAR:	cmpx_var { $$ = node0(cmpx_var); $$->val.id = $1; }
-ILISTVAR:	intlist_var { $$ = node0(intlist_var); $$->val.id = $1; }
-FLISTVAR:	floatlist_var { $$ = node0(floatlist_var); $$->val.id = $1; }
-SLISTVAR:	strlist_var { $$ = node0(strlist_var); $$->val.id = $1; }
-CLISTVAR:	cmpxlist_var { $$ = node0(cmpxlist_var); $$->val.id = $1; }
+INTVAR:		int_var { $$ = node0(int_var); $$->val1.id = $1; }
+FLOATVAR:	float_var { $$ = node0(float_var); $$->val1.id = $1; }
+STRVAR:		str_var { $$ = node0(str_var); $$->val1.id = $1; }
+CMPXVAR:	cmpx_var { $$ = node0(cmpx_var); $$->val1.id = $1; }
+ILISTVAR:	intlist_var { $$ = node0(intlist_var); $$->val1.id = $1; }
+FLISTVAR:	floatlist_var { $$ = node0(floatlist_var); $$->val1.id = $1; }
+SLISTVAR:	strlist_var { $$ = node0(strlist_var); $$->val1.id = $1; }
+CLISTVAR:	cmpxlist_var { $$ = node0(cmpxlist_var); $$->val1.id = $1; }
 
-INTFUN:		int_fun { $$ = node0(int_fun); $$->val.id = $1; }
-FLOATFUN:	float_fun { $$ = node0(float_fun); $$->val.id = $1; }
-STRFUN:		str_fun { $$ = node0(str_fun); $$->val.id = $1; }
-CMPXFUN:	cmpx_fun  { $$ = node0(cmpx_fun); $$->val.id = $1; }
-ILISTFUN:	intlist_fun { $$ = node0(intlist_fun); $$->val.id = $1; }
-FLISTFUN:	floatlist_fun { $$ = node0(floatlist_fun); $$->val.id = $1; }
-SLISTFUN:	strlist_fun { $$ = node0(strlist_fun); $$->val.id = $1; }
-CLISTFUN:	cmpxlist_fun { $$ = node0(cmpxlist_fun); $$->val.id = $1; }
+INTFUN:		int_fun { $$ = node0(int_fun); $$->val1.id = $1; }
+FLOATFUN:	float_fun { $$ = node0(float_fun); $$->val1.id = $1; }
+STRFUN:		str_fun { $$ = node0(str_fun); $$->val1.id = $1; }
+CMPXFUN:	cmpx_fun  { $$ = node0(cmpx_fun); $$->val1.id = $1; }
+ILISTFUN:	intlist_fun { $$ = node0(intlist_fun); $$->val1.id = $1; }
+FLISTFUN:	floatlist_fun { $$ = node0(floatlist_fun); $$->val1.id = $1; }
+SLISTFUN:	strlist_fun { $$ = node0(strlist_fun); $$->val1.id = $1; }
+CLISTFUN:	cmpxlist_fun { $$ = node0(cmpxlist_fun); $$->val1.id = $1; }
 
-NEWID:		new_id { $$ = node0(new_id); $$->val.id = $1; }
+NEWID:		new_id { $$ = node0(new_id); $$->val1.id = $1; }
 
-SET:		set { $$ = node0(set); $$->val.ch = $1; }
+//SET:		set { $$ = $1; }
 
 %%
 
