@@ -6,11 +6,9 @@ function call arguments type match
 function return statement match type
 
 TODO:
-- Invent a better if statement
 - list[inum] is not considered an LTERM. but should be.
 
-- Solve SET ambiguity with lists
-
+- Check if val2 is usefull not only in VDEC. Check general AST structure robustness
 - Abstract tree construction Execution.
 
 Charateristics:
