@@ -54,7 +54,7 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 {DO}	{ return _do; }
 {RETURN}	{ return _return; }
 {IMGR}	{ return imgr; }
-{SET}	{ return set; }
+{SET}	{ yylval.ch = *yytext; return set; }
 {LET}	{ return let; }
 {DEF}	{ enter_static_scope(_staticstack); return def; }
 "}" { exit_static_scope(_staticstack); return *yytext;}

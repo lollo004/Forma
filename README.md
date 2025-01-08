@@ -6,9 +6,8 @@ function call arguments type match
 function return statement match type
 
 TODO:
-- Manage to make function declaration usefull, remove type param specification from function definition: TODO TEST
 - Invent a better if statement
-- Allow functions as function parameters in: function dec, body def, function call: TODO TEST
+- list[inum] is not considered an LTERM. but should be.
 
 - Solve SET ambiguity with lists
 

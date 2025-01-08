@@ -18,7 +18,7 @@ StaticScopeStack *_staticstack;
 
 // LADD LCMP LSLICE 
 enum {	STMTS = 1000, 
-	FUN=1100, FPARAMS=1101, FPARAM=1102, FCALL=1110, FARGS=1111, FARGV=1112, FARGF=1113, 
+	FUN=1100, FUNSIG=1099, FPARAMS=1101, FPARAM=1102, FCALL=1110, FARGS=1111, FARGV=1112, FARGF=1113, 
 	VDEC=1200,
 	LADD=1300, LEQ=1310, LNEQ=1311, LSLICE=1320, ELIST=1330, ILIST=1331, FLIST=1332, CLIST=1333, SLIST=1334,
 	CADD=1400, CMNS=1410,
@@ -32,10 +32,12 @@ enum {	STMTS = 1000,
 
 struct fparams {
 	SymbolType params[10];
+	SymbolNature natparams[10];
 	int nparams;
 };
 struct fargs {
 	char *args[10];
+	SymbolNature natargs[10];
 	int nargs;
 };
 
@@ -65,8 +67,8 @@ static int ASTDEBUG=1;
 %type <ast> VDEC SET
 %type <ast> NEWID ANYID INTVAR FLOATVAR STRVAR CMPXVAR ILISTVAR FLISTVAR SLISTVAR CLISTVAR
 %type <ast> INTFUN FLOATFUN STRFUN CMPXFUN ILISTFUN FLISTFUN SLISTFUN CLISTFUN LISTFCALL
-%type <ast> INT FLOAT STR S STMTS STMT TERM FDEF FBODY LISTVAR NTERM STERM CTERM LTERM LIST STRING FUNC IFC FCARGS FFC SFC CFC ILFC FLFC SLFC CLFC VALUE 
-%type <ast> SLICE INARGS FNARGS CNARGS SARGS INTERM FNTERM INUM FNUM COND
+%type <ast> INT FLOAT STR S STMTS STMT TERM FDEF FBODY LISTVAR NTERM STERM CTERM LTERM LIST STRING FUNC IFC FCARGS FFC SFC CFC ILFC FLFC SLFC CLFC 
+%type <ast> SLICE INARGS FNARGS CNARGS SARGS INTERM FNTERM INUM FNUM COND FBODYS
 %type <fparams> FDECARGS
 %type <fargs> FBARGS
 
@@ -102,30 +104,36 @@ COND:	STMT ',' _if TERM { $$ = node2(IF, $1, $4); }
 /* BEGIN - Static purpose only */
 FDEF:	new_id ':' FDECARGS arrow set '[' ']' { 
 	add_static_symbol(_staticstack, $1, set_to_enumtype($5, 1), NATURE_FUNCTION, 0); 
-	addparam_static_symbol(_staticstack, $1, $3->params, $3->nparams);
+	addparam_static_symbol(_staticstack, $1, $3->params, $3->natparams, $3->nparams); 
+	free($3);
+	print_static_scope_stack(_staticstack);
 	}
     |	new_id ':' FDECARGS arrow set { 
 	add_static_symbol(_staticstack, $1, set_to_enumtype($5, 0), NATURE_FUNCTION, 0); 
-	addparam_static_symbol(_staticstack, $1, $3->params, $3->nparams); 
+	addparam_static_symbol(_staticstack, $1, $3->params, $3->natparams, $3->nparams);
+	free($3);
+	print_static_scope_stack(_staticstack);
 	}
 
-FDECARGS:	FDECARGS '*' set {$$ = $1; $$->params[($$->nparams)++] = set_to_enumtype($3, 1);}
-	|	FDECARGS '*' set '[' ']' {$$ = $1; $$->params[($$->nparams)++] = set_to_enumtype($3, 1);}
-        |	FDECARGS '*' '(' FDECARGS arrow set ')' {$$ = $1; $$->params[($$->nparams)++] = set_to_enumtype($6, 0);}
-        |	FDECARGS '*' '(' FDECARGS arrow set '[' ']' ')' { $$ = $1; $$->params[($$->nparams)++] = set_to_enumtype($6, 1); }
-	|	set { $$ = calloc(1, sizeof(struct fparams)); $$->params[($$->nparams)++] = set_to_enumtype($1, 0); }
-	|	set '[' ']' {$$ = calloc(1, sizeof(struct fparams)); $$->params[($$->nparams)++] = set_to_enumtype($1, 1);}
-	|	'(' FDECARGS arrow set ')' {$$ = calloc(1, sizeof(struct fparams)); $$->params[($$->nparams)++] = set_to_enumtype($4, 0);}
-	|	'(' FDECARGS arrow set '[' ']' ')' {$$ = calloc(1, sizeof(struct fparams)); $$->params[($$->nparams)++] = set_to_enumtype($4, 1);}
+FDECARGS:	FDECARGS '*' set {$$ = $1; $$->params[$$->nparams] = set_to_enumtype($3, 0); $$->natparams[($$->nparams)++] = NATURE_VARIABLE;}
+	|	FDECARGS '*' set '[' ']' {$$ = $1; $$->params[$$->nparams] = set_to_enumtype($3, 1); $$->natparams[($$->nparams)++] = NATURE_VARIABLE; }
+        |	FDECARGS '*' '(' FDECARGS arrow set ')' {$$ = $1; $$->params[$$->nparams] = set_to_enumtype($6, 0); free($4); $$->natparams[($$->nparams)++] = NATURE_FUNCTION; }
+        |	FDECARGS '*' '(' FDECARGS arrow set '[' ']' ')' { $$ = $1; $$->params[$$->nparams] = set_to_enumtype($6, 1); free($4); $$->natparams[($$->nparams)++] = NATURE_FUNCTION; }
+	|	set { $$ = calloc(1, sizeof(struct fparams)); $$->params[$$->nparams] = set_to_enumtype($1, 0); $$->natparams[($$->nparams)++] = NATURE_VARIABLE; }
+	|	set '[' ']' {$$ = calloc(1, sizeof(struct fparams)); $$->params[$$->nparams] = set_to_enumtype($1, 1); $$->natparams[($$->nparams)++] = NATURE_VARIABLE;}
+	|	'(' FDECARGS arrow set ')' {$$ = calloc(1, sizeof(struct fparams)); $$->params[$$->nparams] = set_to_enumtype($4, 0); free($2); $$->natparams[($$->nparams)++] = NATURE_FUNCTION; }
+	|	'(' FDECARGS arrow set '[' ']' ')' {$$ = calloc(1, sizeof(struct fparams)); $$->params[$$->nparams] = set_to_enumtype($4, 1); free($2); $$->natparams[($$->nparams)++] = NATURE_FUNCTION;}
 /* END - Static purpose only */
 
-FBODY:	def FUNC '(' FBARGS ')' '{' STMTS '}' { 
+FBODY:	FBODYS '{' STMTS '}' { $$ = node2(FUN, $1, $3); }
+
+FBODYS:	def FUNC '(' FBARGS ')' { 
 	Symbol *symbol = find_static_symbol(_staticstack, $2->val.id);
 	if($4 == NULL) {
 		if(symbol->nparams != 0) { 
 			printf("FuncError: %s signature not matching declaration!\n", $2->val.id);return -1;}
 		// no params
-		$$ = node2(FUN, NULL, $7);
+		$$ = node1(FUNSIG, NULL);
 		$$->val.id = strdup($2->val.id);
 	}
 	else if(symbol->nparams != $4->nargs) { 
@@ -133,27 +141,25 @@ FBODY:	def FUNC '(' FBARGS ')' '{' STMTS '}' {
 	}
 	else {
 		// signature is matching
-		ast_t **pnodes = malloc(sizeof(ast_t *) * $4->nargs);
+		ast_t **pnodes = malloc(sizeof(ast_t *) * $4->nargs);	
+		add_static_symbol(_staticstack, $4->args[0], symbol->params[0], symbol->natparams[0], 0);
 		ast_t *tmp = node0(SET); tmp->val.integer = symbol->params[0]; 
 		pnodes[0] = node1(FPARAM, tmp);
-		add_static_symbol(_staticstack, $4->args[0], symbol->params[0], NATURE_VARIABLE, 0);
+		pnodes[0]->val.id = $4->args[0];
 		for(int i=1;i<$4->nargs;i++){
-			add_static_symbol(_staticstack, $4->args[i], symbol->params[i], NATURE_VARIABLE, 0);
-			pnodes[i]->val.id = $4->args[i];
-			ast_t *tmp = node0(SET); tmp->val.integer = symbol->params[i];
+			add_static_symbol(_staticstack, $4->args[i], symbol->params[i], symbol->natparams[i], 0);
+			ast_t *tmp = node0(set); tmp->val.integer = symbol->params[i];
 			pnodes[i] = node2(FPARAMS, tmp, pnodes[i-1]);
+			pnodes[i]->val.id = $4->args[i];
 		} // not only variables !!
-		$$ = node2(FUN, pnodes[$4->nargs-1], $7);
+		$$ = node1(FUNSIG, pnodes[$4->nargs-1]);
 		$$->val.id = strdup($2->val.id);
 		free(pnodes);
 	}
-	
 }
 
-FBARGS:	FBARGS ',' ANYID { 
-	$$ = $1; $$->args[($$->nargs)++] = strdup($3->val.id);
-	}
-      | ANYID { $$ = calloc(1, sizeof(struct fargs)); $$->args[($$->nargs)++] = strdup($1->val.id); }
+FBARGS:	FBARGS ',' ANYID { $$ = $1; $$->args[($$->nargs)++] = $3->val.id;}
+      | ANYID { $$ = calloc(1, sizeof(struct fargs)); $$->args[($$->nargs)++] = $1->val.id; }
       | %empty { $$ = NULL; }
 
 IFC:	int_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
@@ -165,8 +171,9 @@ FLFC:	floatlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
 SLFC: 	strlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
 CLFC:	cmpxlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val.id = $1; }
 
-FCARGS: FCARGS ',' VALUE { $$ = node2(FARGS, $1, $3); }
-      |	VALUE { $$ = node1(FARGV, $1); } // arg value
+FCARGS: FCARGS ',' TERM { $$ = node2(FARGS, $1, $3); }
+      |	FCARGS ',' FUNC { $$ = node2(FARGS, $1, $3); }
+      |	TERM { $$ = node1(FARGV, $1); } // arg value
       | FUNC { $$ = node1(FARGF, $1); } // arg function
       |	%empty { $$ = NULL; };
 
@@ -184,7 +191,7 @@ VDEC:	let new_id ':' SET '=' NTERM {
 	$$ = node2(VDEC, $6, $8); $$->val.id = $2; }
 
 ANYID:	INTVAR | FLOATVAR | STRVAR | LISTVAR | FUNC | NEWID
-VALUE:	INUM | FNUM | CTERM | STRING | LIST /* A value is known to be existing in this static scope */
+// VALUE:	INUM | FNUM | CTERM | STRING | LIST 
 FUNC:	INTFUN | FLOATFUN | STRFUN | CMPXFUN | ILISTFUN | FLISTFUN | SLISTFUN | CLISTFUN  /*  a Func is an existing function name */
 
 TERM:	NTERM
@@ -194,10 +201,6 @@ TERM:	NTERM
 
 // ---- LIST TERM
 LTERM:	LTERM '+' LIST { $$ = node2(LADD, $1, $3); }
-     //|	LTERM '<' LIST { $$ = node2(LMIN, $1, $3); }
-     //|	LTERM '>' LIST { $$ = node2(LGRT, $1, $3); }
-     //| 	LTERM mine LIST { $$ = node2(LMINE, $1, $3); }
-     //|	LTERM grte LIST { $$ = node2(LGRTE, $1, $3); }
      |  LTERM eq LIST { $$ = node2(LEQ, $1, $3); }
      |	LTERM neq LIST { $$ = node2(LNEQ, $1, $3); }
      |	LTERM SLICE { $$ = node2(LSLICE, $1, $2); }

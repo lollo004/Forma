@@ -43,6 +43,7 @@ static Symbol *create_symbol(const char *name, SymbolType type, SymbolNature nat
     symbol->nature = nature;
     symbol->scope_level = scope_level;
     symbol->params = NULL;
+    symbol->natparams = NULL;
     symbol->nparams = 0;
     symbol->next = NULL;
     return symbol;
@@ -140,12 +141,15 @@ bool add_static_symbol(StaticScopeStack *stack, const char *name, SymbolType typ
     return true;
 }
 
-void addparam_static_symbol(StaticScopeStack *stack, const char *name, const SymbolType *p, int plen){
+void addparam_static_symbol(StaticScopeStack *stack, const char *name, const SymbolType *p, const SymbolNature *n, int plen){
 	SymbolTable *table = (stack->top >= 0 ? stack->scopes[stack->top] : stack->global);
 	unsigned int index = hash(name);
 	Symbol *symbol = table->table[index];
+	if(plen == 0) return;
 	symbol->params = malloc(sizeof(SymbolType) * plen);
-	memcpy(symbol->params, p, plen);
+	symbol->natparams = malloc(sizeof(SymbolNature) * plen);
+	memcpy(symbol->params, p, sizeof(SymbolType) * plen);
+	memcpy(symbol->natparams, n, sizeof(SymbolNature) * plen);
 	symbol->nparams = plen;
 }
 
@@ -182,8 +186,10 @@ void print_static_scope_stack(StaticScopeStack *stack) {
         for (int j = 0; j < HASH_TABLE_SIZE; j++) {
             Symbol *symbol = stack->scopes[i]->table[j];
             while (symbol) {
-                printf("  %s (Type: %d, Nature: %d, Nparams: %d)\n", symbol->name, symbol->type, symbol->nature, symbol->nparams);
-                symbol = symbol->next;
+                printf("  %s (Type: %d, Nature: %d, Params: ", symbol->name, symbol->type, symbol->nature);
+                for(int i=0;i<symbol->nparams;i++) printf("%d:%d ", symbol->params[i], symbol->natparams[i]);
+		printf(")\n");
+		symbol = symbol->next;
             }
         }
     }
@@ -191,8 +197,10 @@ void print_static_scope_stack(StaticScopeStack *stack) {
     for (int j = 0; j < HASH_TABLE_SIZE; j++) {
         Symbol *symbol = stack->global->table[j];
         while (symbol) {
-            printf("  %s (Type: %d, Nature: %d, Nparams: %d)\n", symbol->name, symbol->type, symbol->nature, symbol->nparams);
-            symbol = symbol->next;
+                printf("  %s (Type: %d, Nature: %d, Params: ", symbol->name, symbol->type, symbol->nature);
+                for(int i=0;i<symbol->nparams;i++) printf("%d:%d ", symbol->params[i], symbol->natparams[i]);
+		printf(")\n");
+		symbol = symbol->next;
         }
     }
     printf("--------------------------\n");

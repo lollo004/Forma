@@ -2,15 +2,15 @@ map: ( N => N ) * N[] => N[];
 def map(f, val) {
 	?
 	return [], if val == [],
-	return f(val[0]) + map(f, val[1:]), else;
-	?
-}
+	return [f(val[0])] + map(f, val[1:]), else
+	?;
+};
 
 sum: N * N => N;
 def sum (x1, x2) {
 	return x1 + x2;
-}
+};
 
-let list: N = [1, 2, 3];
+let list[]: N = [1, 2, 3];
 
-write map(sum, list);
+write sum(sum, list);
