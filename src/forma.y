@@ -16,29 +16,6 @@ extern void yyerror(const char *msg) {
 
 StaticScopeStack *_staticstack;
 
-enum {	STMTS = 1000, 
-	FUN=1100, FUNSIG=1099, FPARAMS=1101, FPARAM=1102, FCALL=1110, FARGS=1111, FARGV=1112, FARGF=1113, 
-	VDEC=1200,
-	LADD=1300, LEQ=1310, LNEQ=1311, LSLICE=1320, ELIST=1330, ILIST=1331, FLIST=1332, CLIST=1333, SLIST=1334,
-	CADD=1400, CMNS=1410,
-	SADD=1500, SEQ=1510, SNEQ=1511, SSLICE=1520,
-	SLICE=1600, SLICER=1601, SLICEL=1602, SLICEI=1603,
-	NADD=1700, NMNS=1701, NMUL=1702, NDIV=1703, NPOW=1704, 
-	NEQ=1710, NNEQ=1711, NGRT=1712, NMIN=1713, NGRTE=1714, NMINE=1715,
-	IF=1800, ELSE=1801
-};
-
-struct fparams {
-	SymbolType params[10];
-	SymbolNature natparams[10];
-	int nparams;
-};
-struct fargs {
-	char *args[10];
-	SymbolNature natargs[10];
-	int nargs;
-};
-
 static int ASTDEBUG=1;
 #define ASTD if (ASTDEBUG)
 
@@ -76,7 +53,7 @@ static int ASTDEBUG=1;
 %left '^'
 %%
 
-S:	STMTS { ASTD printf("\n"); ASTD print_ast($1, 0, ""); ASTD printf("\n"); ASTD print_static_scope_stack(_staticstack); }
+S:	STMTS { ASTD printf("\n"); ASTD print_ast($1, 0, ""); ASTD printf("\n"); /*ASTD print_static_scope_stack(_staticstack);*/ }
  ;
 STMTS:	STMTS STMT ';' { $$ = node2(STMTS, $1, $2);}
      |  STMTS SASTMT ';' {} // no action on SA
@@ -104,13 +81,13 @@ FDEF:	new_id ':' FDECARGS arrow set '[' ']' {
 	add_static_symbol(_staticstack, $1, set_to_enumtype($5, 1), NATURE_FUNCTION, 0); 
 	addparam_static_symbol(_staticstack, $1, $3->params, $3->natparams, $3->nparams); 
 	free($3);
-	print_static_scope_stack(_staticstack);
+	/* print_static_scope_stack(_staticstack); */
 	}
     |	new_id ':' FDECARGS arrow set { 
 	add_static_symbol(_staticstack, $1, set_to_enumtype($5, 0), NATURE_FUNCTION, 0); 
 	addparam_static_symbol(_staticstack, $1, $3->params, $3->natparams, $3->nparams);
 	free($3);
-	print_static_scope_stack(_staticstack);
+	/* print_static_scope_stack(_staticstack); */
 	}
 
 FDECARGS:	FDECARGS '*' set {$$ = $1; $$->params[$$->nparams] = set_to_enumtype($3, 0); $$->natparams[($$->nparams)++] = NATURE_VARIABLE;}
@@ -287,19 +264,19 @@ INTERM: INTERM '-' INUM { $$=node2(NMNS, $1, $3); }
       | INUM 
 INUM: INT | INTVAR | IFC //d
 
-FNTERM: FNTERM '-' FNUM { $$=node2(NMNS, $1, $3); }
-      |	'-' FNUM { $$=node1(NMNS, $2); }
-      |	'+' FNUM { $$=node1(NADD, $2); }
-      | FNTERM '+' FNUM { $$=node2(NADD, $1, $3); }
-      |	FNTERM '*' FNUM { $$=node2(NMUL, $1, $3); }
-      | FNTERM '/' FNUM { $$=node2(NDIV, $1, $3); }
+FNTERM: FNTERM '-' FNUM { $$=node2(FMNS, $1, $3); }
+      |	'-' FNUM { ast_t *t = node0(real); t->val1.real=0; $$ = node2(FMNS, t, $2); }
+      |	'+' FNUM { $$ = $2; }
+      | FNTERM '+' FNUM { $$=node2(FADD, $1, $3); }
+      |	FNTERM '*' FNUM { $$=node2(FMUL, $1, $3); }
+      | FNTERM '/' FNUM { $$=node2(FDIV, $1, $3); }
       | FNTERM eq FNUM { $$=node2(NEQ, $1, $3); }
       | FNTERM neq FNUM { $$=node2(NNEQ, $1, $3); }
       | FNTERM '>' FNUM { $$=node2(NGRT, $1, $3); }
       | FNTERM '<' FNUM { $$=node2(NMIN, $1, $3); }
       | FNTERM mine FNUM { $$=node2(NMINE, $1, $3); }
       | FNTERM grte FNUM { $$=node2(NGRTE, $1, $3); }
-      |	FNTERM '^' FNUM { $$=node2(NPOW, $1, $3); } 
+      |	FNTERM '^' FNUM { $$=node2(FPOW, $1, $3); } 
       |	'(' FNTERM ')' { $$ = $2; }
       | FNUM
 FNUM: FLOAT | FLOATVAR | FFC //d

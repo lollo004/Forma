@@ -70,4 +70,56 @@ void print_ast(ast_t *t, int deep) {
 */
 int validate(ast_t *t) { return 0; }
 int optimize(ast_t *t) { return 0; }
-int execute(ast_t *t) { return 0; }
+
+/* Variables don't need to be stored with type, type is controlled by parser */
+/* This doesn't apply to list yet */
+/* Every operational node should differenciate if I, F, C, S, IL, FL, SL, CL */
+
+ex_t ex(ast_t *t) { 
+	ex_t ret = {.val.integer = 0};
+	if(!t) return ret;
+
+	switch (t->type) {
+		case STMTS:
+			return ex(t->c[0]), ex(t->c[1]);
+		
+
+
+
+		// you need to update all codes after!!
+		case FMNS:
+			ret.val.real = ex(t->c[0]).val.real - ex(t->c[1]).val.real;
+		// and so on
+		case str:
+			ret.val.str = t->val1.str; return ret;
+		case real:
+			ret.val.real = t->val1.real; return ret;
+		case integer:
+			ret.val.integer = t->val1.integer; return ret;
+		case new_id:
+			ret.val.id = t->val1.id; return ret;
+		case cmpxlist_fun:
+		case strlist_fun:
+		case floatlist_fun:
+		case intlist_fun:
+		case cmpx_fun:
+		case str_fun:
+		case float_fun:
+		case int_fun:
+			// retrieve function, execute it, write result in ret.val.integer and return
+		case cmpxlist_var:
+		case strlist_var:
+		case floatlist_var:
+		case intlist_var:
+		case cmpx_var:
+		case str_var:
+		case float_var:
+		case int_var:
+			// retrieve val and return it
+			//ret.val.integer = *retrieve*; return ret;
+		default:
+			printf("Unsupported node type %d\n", t->type);
+			break;
+	}
+	return ret;
+}

@@ -24,6 +24,17 @@ typedef enum {
     NATURE_FUNCTION
 } SymbolNature;
 
+struct fparams {
+	SymbolType params[10];
+	SymbolNature natparams[10];
+	int nparams;
+};
+struct fargs {
+	char *args[10];
+	SymbolNature natargs[10];
+	int nargs;
+};
+
 // Symbol structure
 typedef struct Symbol {
     char *name;             // Name of the symbol
