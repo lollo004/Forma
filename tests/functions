@@ -1,7 +1,7 @@
 map: ( N => N ) * N[] => N[];
 def map(f, val) {
 	?
-	return [], if val == [],
+	return [], if val == [2],
 	return [f(val[0])] + map(f, val[1:]), else
 	?;
 };
