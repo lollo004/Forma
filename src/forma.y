@@ -205,27 +205,27 @@ LTERM:	ILTERM
 
 // ---- LIST TERM
 ILTERM:	ILTERM '+' ILIST { $$ = node2(ILADD, $1, $3); }
-     |  ILTERM eq ILIST { $$ = node2(LEQ, $1, $3); }
-     |	ILTERM neq ILIST { $$ = node2(LNEQ, $1, $3); }
+     |  ILTERM eq ILIST { $$ = node2(ILEQ, $1, $3); }
+     |	ILTERM neq ILIST { $$ = node2(ILNEQ, $1, $3); }
      |	ILTERM SLICE { $$ = node2(ILSLICE, $1, $2); }
      |	ILTERM '+' ELIST 
      |	ILIST //d
 
 FLTERM:	FLTERM '+' FLIST { $$ = node2(FLADD, $1, $3); }
-     |  FLTERM eq FLIST { $$ = node2(LEQ, $1, $3); }
-     |	FLTERM neq FLIST { $$ = node2(LNEQ, $1, $3); }
+     |  FLTERM eq FLIST { $$ = node2(FLEQ, $1, $3); }
+     |	FLTERM neq FLIST { $$ = node2(FLNEQ, $1, $3); }
      |	FLTERM SLICE { $$ = node2(FLSLICE, $1, $2); }
      |	FLIST //d
 
 CLTERM:	CLTERM '+' CLIST { $$ = node2(CLADD, $1, $3); }
-     |  CLTERM eq CLIST { $$ = node2(LEQ, $1, $3); }
-     |	CLTERM neq CLIST { $$ = node2(LNEQ, $1, $3); }
+     |  CLTERM eq CLIST { $$ = node2(CLEQ, $1, $3); }
+     |	CLTERM neq CLIST { $$ = node2(CLNEQ, $1, $3); }
      |	CLTERM SLICE { $$ = node2(CLSLICE, $1, $2); }
      |	CLIST //d
 
 SLTERM:	SLTERM '+' SLIST { $$ = node2(SLADD, $1, $3); }
-     |  SLTERM eq SLIST { $$ = node2(LEQ, $1, $3); }
-     |	SLTERM neq SLIST { $$ = node2(LNEQ, $1, $3); }
+     |  SLTERM eq SLIST { $$ = node2(SLEQ, $1, $3); }
+     |	SLTERM neq SLIST { $$ = node2(SLNEQ, $1, $3); }
      |	SLTERM SLICE { $$ = node2(SLSLICE, $1, $2); }
      |	SLIST //d
 

@@ -1,9 +1,14 @@
-#include "list_t.h"
+#ifndef ABSTRACT_TREE_H
+#define ABSTRACT_TREE_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
 #include <string.h>
 #include <math.h>
+
+#include <list_t.h>
+#include <stack_t.h>
 
 enum {	STMTS = 1000, 
 	FUN=1100, FUNSIG=1099, FPARAMS=1101, FPARAM=1102, FCALL=1110, FARGS=1111, FARGV=1112, FARGF=1113, 
@@ -99,6 +104,8 @@ ast_t *node3(int type, ast_t *c1, ast_t *c2, ast_t *c3);
 
 void print_ast(ast_t *t, int deep, const char *prefix); 
 
-int validate(ast_t *t);
 int optimize(ast_t *t);
-ex_t ex(ast_t *t);
+int exec_env(ast_t *t);
+ex_t ex(ast_t *t, ExecutionContext *e);
+
+#endif

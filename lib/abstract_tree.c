@@ -45,46 +45,64 @@ void print_ast(ast_t *t, int deep, const char *prefix) {
         }
     }
 }
-/*
-void print_ast(ast_t *t, int deep) {
-    if (!t) return;
 
-    // Stampa la parte centrale per il nodo corrente
-    for (int i = 0; i < deep; i++) {
-        printf("  ");  // Indentazione per la profondità
-    }
-    printf("+-- Node Type: %d\n", t->type);
-
-    // Stampa i figli
-    for (int i = 0; i < MC; i++) {
-        if (t->c[i]) {
-            // Stampa la connessione al figlio
-            for (int j = 0; j < deep + 1; j++) {
-                printf("  ");  // Indentazione per la profondità
-            }
-            printf("|-- ");
-            print_ast(t->c[i], deep + 1);  // Chiamata ricorsiva per il figlio
-        }
-    }
-}
-*/
-int validate(ast_t *t) { return 0; }
 int optimize(ast_t *t) { return 0; }
 
 /* Variables don't need to be stored with type, type is controlled by parser */
-ex_t ex(ast_t *t) { 
+
+int exec_env(ast_t *t) {
+	ExecutionContext *context = create_execution_context();
+	optimize(t);
+	ex(t, context);	
+	free_execution_context(context);
+}
+
+ex_t ex(ast_t *t, ExecutionContext *e) { 
 	ex_t ret = {.val.integer = 0};
 	if(!t) return ret;
 
 	switch (t->type) {
 		case STMTS:
-			return ex(t->c[0]), ex(t->c[1]);
-		
+			return ex(t->c[0],e), ex(t->c[1],e);
+
+		case INEQ:
+			if(ex(t->c[0],e).val.integer==ex(t->c[1],e).val.integer) ret.val.integer++; return ret; 
+		case INNEQ:
+			if(ex(t->c[0],e).val.integer!=ex(t->c[1],e).val.integer) ret.val.integer++; return ret;
+		case INGRT:
+			if(ex(t->c[0],e).val.integer>ex(t->c[1],e).val.integer) ret.val.integer++; return ret;
+		case INMIN:
+			if(ex(t->c[0],e).val.integer<ex(t->c[1],e).val.integer) ret.val.integer++; return ret;
+		case INGRTE:
+			if(ex(t->c[0],e).val.integer>=ex(t->c[1],e).val.integer) ret.val.integer++; return ret;
+		case INMINE:
+			if(ex(t->c[0],e).val.integer<=ex(t->c[1],e).val.integer) ret.val.integer++; return ret;	
+		case FNEQ:
+			if(ex(t->c[0],e).val.real==ex(t->c[1],e).val.real) ret.val.real++; return ret; 
+		case FNNEQ:
+			if(ex(t->c[0],e).val.real!=ex(t->c[1],e).val.real) ret.val.real++; return ret;
+		case FNGRT:
+			if(ex(t->c[0],e).val.real>ex(t->c[1],e).val.real) ret.val.real++; return ret;
+		case FNMIN:
+			if(ex(t->c[0],e).val.real<ex(t->c[1],e).val.real) ret.val.real++; return ret;
+		case FNGRTE:
+			if(ex(t->c[0],e).val.real>=ex(t->c[1],e).val.real) ret.val.real++; return ret;
+		case FNMINE:
+			if(ex(t->c[0],e).val.real<=ex(t->c[1],e).val.real) ret.val.real++; return ret;
+		case SEQ:
+			if(!strcmp(ex(t->c[0],e).val.str,ex(t->c[1],e).val.str)) ret.val.real++; return ret;
+		case SNEQ:
+			if(strcmp(ex(t->c[0],e).val.str,ex(t->c[1],e).val.str)) ret.val.real++; return ret;
+		case ILEQ:
+			// compare_int_lists() CONTINUE HERE
+		case ILNEQ:
+
+
 		case IWRITE:
-			printf("%d", ex(t->c[0]).val.integer);
+			printf("%d", ex(t->c[0],e).val.integer);
 			return ret;
 		case FWRITE:
-			printf("%lf", ex(t->c[0]).val.real);
+			printf("%lf", ex(t->c[0],e).val.real);
 			return ret;
 		case CWRITE:
 			ret.val.cmpx = ex(t->c[0]).val.cmpx;
@@ -253,8 +271,6 @@ ex_t ex(ast_t *t) {
 			ret.val.real = ex(t->c[0]).val.real/ex(t->c[1]).val.real; return ret;
 		case FPOW:
 			ret.val.real = pow(ex(t->c[0]).val.real,ex(t->c[1]).val.real); return ret;
-		case IEQ:
-			// return an integer
 		 return ret;
 		case Str:
 			ret.val.str = t->val1.str; return ret;

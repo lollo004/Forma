@@ -80,5 +80,11 @@ void complex_list_add(ComplexLinkedList *list, double _Complex value);
 void complex_list_append(ComplexLinkedList *list1, ComplexLinkedList *list2);
 void free_complex_list(ComplexLinkedList *list);
 
+// Compare lists
+int compare_int_lists(IntLinkedList *list1, IntLinkedList *list2);
+int compare_double_lists(DoubleLinkedList *list1, DoubleLinkedList *list2);
+int compare_string_lists(StringLinkedList *list1, StringLinkedList *list2);
+int compare_complex_lists(ComplexLinkedList *list1, ComplexLinkedList *list2);
+
 #endif // LINKED_LIST_LIBRARY_H
 
