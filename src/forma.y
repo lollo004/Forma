@@ -105,7 +105,8 @@ FDECARGS:	FDECARGS '*' set {$$ = $1; $$->params[$$->nparams] = set_to_enumtype($
 	|	'(' FDECARGS arrow set '[' ']' ')' {$$ = calloc(1, sizeof(struct fparams)); $$->params[$$->nparams] = set_to_enumtype($4, 1); free($2); $$->natparams[($$->nparams)++] = NATURE_FUNCTION;}
 /* END - Static purpose only */
 
-FBODY:	FBODYS '{' STMTS '}' { $$ = node2(FUN, $1, $3); }
+FBODY:	FBODYS '{' STMTS '}' { 	ast_t *tmp = node2(FUN, $1, $3);
+				$$ = node1(FUNDEC, tmp); $$->val1.id = $1->val1.id;}
 
 FBODYS:	def FUNC '(' FBARGS ')' { 
 	Symbol *symbol = find_static_symbol(_staticstack, $2->val1.id);
@@ -114,7 +115,7 @@ FBODYS:	def FUNC '(' FBARGS ')' {
 			printf("FuncError: %s signature not matching declaration!\n", $2->val1.id);return -1;}
 		// no params
 		$$ = node1(FUNSIG, NULL);
-		$$->val1.id = strdup($2->val1.id);
+		$$->val1.id = strdup($2->val1.id); // is strdup necessary?
 	}
 	else if(symbol->nparams != $4->nargs) { 
 		printf("FuncError: %s signature not matching declaration!\n", $2->val1.id);return -1;
@@ -131,9 +132,9 @@ FBODYS:	def FUNC '(' FBARGS ')' {
 			ast_t *tmp = node0(set); tmp->val1.integer = symbol->params[i];
 			pnodes[i] = node2(FPARAMS, tmp, pnodes[i-1]);
 			pnodes[i]->val1.id = $4->args[i];
-		} // not only variables !!
+		} 
 		$$ = node1(FUNSIG, pnodes[$4->nargs-1]);
-		$$->val1.id = strdup($2->val1.id);
+		$$->val1.id = strdup($2->val1.id); //is strdup necessary?
 		free(pnodes);
 	}
 }
@@ -142,19 +143,19 @@ FBARGS:	FBARGS ',' ANYID { $$ = $1; $$->args[($$->nargs)++] = $3->val1.id;}
       | ANYID { $$ = calloc(1, sizeof(struct fargs)); $$->args[($$->nargs)++] = $1->val1.id; }
       | %empty { $$ = NULL; }
 
-IFC:	int_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
-FFC:	float_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
-SFC:	str_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
-CFC:	cmpx_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
-ILFC:	intlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
-FLFC:	floatlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
-SLFC: 	strlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
-CLFC:	cmpxlist_fun '(' FCARGS ')' { $$ = node1(FCALL, $3); $$->val1.id = $1; }
+IFC:	int_fun '(' FCARGS ')' { $$ = node1(IFC, $3); $$->val1.id = $1; }
+FFC:	float_fun '(' FCARGS ')' { $$ = node1(FFC, $3); $$->val1.id = $1; }
+SFC:	str_fun '(' FCARGS ')' { $$ = node1(SFC, $3); $$->val1.id = $1; }
+CFC:	cmpx_fun '(' FCARGS ')' { $$ = node1(CFC, $3); $$->val1.id = $1; }
+ILFC:	intlist_fun '(' FCARGS ')' { $$ = node1(ILFC, $3); $$->val1.id = $1; }
+FLFC:	floatlist_fun '(' FCARGS ')' { $$ = node1(FLFC, $3); $$->val1.id = $1; }
+SLFC: 	strlist_fun '(' FCARGS ')' { $$ = node1(SLFC, $3); $$->val1.id = $1; }
+CLFC:	cmpxlist_fun '(' FCARGS ')' { $$ = node1(CLFC, $3); $$->val1.id = $1; }
 
 FCARGS: FCARGS ',' TERM { $$ = node2(FARGS, $1, $3); }
-      |	FCARGS ',' FUNC { $$ = node2(FARGS, $1, $3); }
+      //|	FCARGS ',' FUNC { $$ = node2(FARGS, $1, $3); } LATER!
       |	TERM { $$ = node1(FARGV, $1); } // arg value
-      | FUNC { $$ = node1(FARGF, $1); } // arg function
+      //| FUNC { $$ = node1(FARGF, $1); } // arg function LATER!
       |	%empty { $$ = NULL; };
 
 VDEC:	let new_id ':' set '=' INTERM { 

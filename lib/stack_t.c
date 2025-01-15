@@ -172,39 +172,46 @@ void free_execution_context(ExecutionContext *context) {
 
 /*
 int main() {
+    // Example usage
+    FunctionMap *function_map = create_function_map();
     VariableStack *variable_stack = create_variable_stack();
+    FCallStack *fcall_stack = create_fcall_stack(10);
 
-    // Variabile globale
-    int *global_value = malloc(sizeof(int));
-    *global_value = 999;
-    variable_stack_insert(variable_stack, "global_var", global_value, true);
-
-    // Scope locale
     push_scope(variable_stack);
-    int *local_value = malloc(sizeof(int));
-    *local_value = 42;
-    variable_stack_insert(variable_stack, "local_var", local_value, false);
 
-    // Accesso a variabili
-    int *retrieved_local = (int *)variable_stack_get(variable_stack, "local_var");
-    int *retrieved_global = (int *)variable_stack_get(variable_stack, "global_var");
+    // Insert and retrieve variables
+    int *value = malloc(sizeof(int));
+    *value = 42;
+    variable_stack_insert(variable_stack, "x", value, false);
 
-    printf("Local variable: %d\\n", retrieved_local ? *retrieved_local : -1);
-    printf("Global variable: %d\\n", retrieved_global ? *retrieved_global : -1);
+    int *retrieved_value = (int *)variable_stack_get(variable_stack, "x");
+    if (retrieved_value) {
+        printf("Variable x: %d\n", *retrieved_value);
+    }
+
+    // Function call stack example
+    int *arg1 = malloc(sizeof(int));
+    *arg1 = 10;
+    fcall_stack_push(fcall_stack, arg1);
+
+    int *arg2 = malloc(sizeof(int));
+    *arg2 = 20;
+    fcall_stack_push(fcall_stack, arg2);
+
+    int *retrieved_arg2 = (int *)fcall_stack_pop(fcall_stack);
+    int *retrieved_arg1 = (int *)fcall_stack_pop(fcall_stack);
+
+    printf("Retrieved args: %d, %d\n", *retrieved_arg1, *retrieved_arg2);
+
+    free(arg1);
+    free(arg2);
 
     pop_scope(variable_stack);
 
-    // Accesso dopo aver chiuso lo scope
-    retrieved_local = (int *)variable_stack_get(variable_stack, "local_var");
-    retrieved_global = (int *)variable_stack_get(variable_stack, "global_var");
-
-    printf("Local variable after scope pop: %s\\n", retrieved_local ? "Found" : "Not Found");
-    printf("Global variable remains: %d\\n", retrieved_global ? *retrieved_global : -1);
-
     // Cleanup
-    free(global_value);
-    free(local_value);
+    free(function_map);
     free(variable_stack);
+    free_fcall_stack(fcall_stack);
     return 0;
 }
 */

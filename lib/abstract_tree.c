@@ -78,107 +78,138 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 		case INMINE:
 			if(ex(t->c[0],e).val.integer<=ex(t->c[1],e).val.integer) ret.val.integer++; return ret;	
 		case FNEQ:
-			if(ex(t->c[0],e).val.real==ex(t->c[1],e).val.real) ret.val.real++; return ret; 
+			if(ex(t->c[0],e).val.real==ex(t->c[1],e).val.real) ret.val.integer++; return ret; 
 		case FNNEQ:
-			if(ex(t->c[0],e).val.real!=ex(t->c[1],e).val.real) ret.val.real++; return ret;
+			if(ex(t->c[0],e).val.real!=ex(t->c[1],e).val.real) ret.val.integer++; return ret;
 		case FNGRT:
-			if(ex(t->c[0],e).val.real>ex(t->c[1],e).val.real) ret.val.real++; return ret;
+			if(ex(t->c[0],e).val.real>ex(t->c[1],e).val.real) ret.val.integer++; return ret;
 		case FNMIN:
-			if(ex(t->c[0],e).val.real<ex(t->c[1],e).val.real) ret.val.real++; return ret;
+			if(ex(t->c[0],e).val.real<ex(t->c[1],e).val.real) ret.val.integer++; return ret;
 		case FNGRTE:
-			if(ex(t->c[0],e).val.real>=ex(t->c[1],e).val.real) ret.val.real++; return ret;
+			if(ex(t->c[0],e).val.real>=ex(t->c[1],e).val.real) ret.val.integer++; return ret;
 		case FNMINE:
-			if(ex(t->c[0],e).val.real<=ex(t->c[1],e).val.real) ret.val.real++; return ret;
+			if(ex(t->c[0],e).val.real<=ex(t->c[1],e).val.real) ret.val.integer++; return ret;
 		case SEQ:
-			if(!strcmp(ex(t->c[0],e).val.str,ex(t->c[1],e).val.str)) ret.val.real++; return ret;
+			if(!strcmp(ex(t->c[0],e).val.str,ex(t->c[1],e).val.str)) ret.val.integer++; return ret;
 		case SNEQ:
-			if(strcmp(ex(t->c[0],e).val.str,ex(t->c[1],e).val.str)) ret.val.real++; return ret;
+			if(strcmp(ex(t->c[0],e).val.str,ex(t->c[1],e).val.str)) ret.val.integer++; return ret;
 		case ILEQ:
-			// compare_int_lists() CONTINUE HERE
+			if(compare_int_lists(ex(t->c[0],e).val.ilist,ex(t->c[1],e).val.ilist)) ret.val.integer++; return ret;
 		case ILNEQ:
-
+			if(!compare_int_lists(ex(t->c[0],e).val.ilist,ex(t->c[1],e).val.ilist)) ret.val.integer++; return ret;
+		case FLEQ:
+			if(compare_double_lists(ex(t->c[0],e).val.flist,ex(t->c[1],e).val.flist)) ret.val.integer++; return ret;
+		case FLNEQ:
+			if(!compare_double_lists(ex(t->c[0],e).val.flist,ex(t->c[1],e).val.flist)) ret.val.integer++; return ret;
+		case CLEQ:
+			if(compare_complex_lists(ex(t->c[0],e).val.clist,ex(t->c[1],e).val.clist)) ret.val.integer++; return ret;
+		case CLNEQ:
+			if(!compare_complex_lists(ex(t->c[0],e).val.clist,ex(t->c[1],e).val.clist)) ret.val.integer++; return ret;
+		case SLEQ:
+			if(compare_string_lists(ex(t->c[0],e).val.slist,ex(t->c[1],e).val.slist)) ret.val.integer++; return ret;
+		case SLNEQ:
+			if(!compare_string_lists(ex(t->c[0],e).val.slist,ex(t->c[1],e).val.slist)) ret.val.integer++; return ret;
 
 		case IWRITE:
-			printf("%d", ex(t->c[0],e).val.integer);
-			return ret;
+			printf("%d", ex(t->c[0],e).val.integer); return ret;
 		case FWRITE:
-			printf("%lf", ex(t->c[0],e).val.real);
-			return ret;
+			printf("%lf", ex(t->c[0],e).val.real); return ret;
 		case CWRITE:
 			ret.val.cmpx = ex(t->c[0]).val.cmpx;
-			printf("%.2lf %.2lfi", creal(ret.val.cmpx), cimag(ret.val.cmpx));	
-			return ret;
+			printf("%.2lf %.2lfi", creal(ret.val.cmpx), cimag(ret.val.cmpx)); return ret;
 		case SWRITE:
-			printf("%s", ex(t->c[0]).val.str);
-			return ret;
+			printf("%s", ex(t->c[0]).val.str); return ret;
 		case IREAD:
-			scanf("%d", &ret.val.integer);
-			return ret;	
+			scanf("%d", &ret.val.integer); return ret;	
 		case FREAD:
-			scanf("%lf", &ret.val.real);
-			return ret;
+			scanf("%lf", &ret.val.real); return ret;
 		case SREAD:
-			scanf("%255[^\n]", ret.val.str);
-			return ret;
+			scanf("%255[^\n]", ret.val.str); return ret;
 		case IF:
 			if(ex(t->c[1]).val.integer) ex(t->c[0]);
-			else ex(t->c[2]);
+			else ex(t->c[2]); return ret;
 		case ELSE:
-			ex(t->c[0]);
+			ex(t->c[0]); return ret;
+		case FUNDEC:
+			function_map_insert(e->function_map, t->val1.id, t->c[0]); return ret;
 		case FUN:
-			//add fun entry with address to this this block
-			//fcall will have to vdec $1 and then execute $2
+			ex(t->c[0],e), ex(t->c[1],e); return ret;
 		case FPARAMS:
-			// pop var on $1 but doing a special vdec
-			// execute c[1]
+			variable_stack_insert(e->variable_stack, t->val1.id, fcall_stack_pop(fcall_stack), false); 
+			ex(t->c[1],e); return ret;
 		case FPARAM:
-			// pop var on $1
-		case SLFC:
-			// do
-		case CLFC:
-			// do
-		case FLFC:
-			// do
-		case ILFC:
-			// do
-		case SFC:
-			// do
-		case CFC:
-			// do
-		case FFC:
-			// do
-		case IFC:
-			// enter new scope
-			// push and alloc varvalues in stack (with voidpointer!)
-			// add return address to HERE
-			// goto function
-			// ret.val.integer = ex_t($2);
-		case SLVDEC:
-			// call ivdec, pass name, type, value, (scope automatic)
-	
-		case CLVDEC:
-			// call ivdec, pass name, type, and integer value
-	
-		case FLVDEC:
-			// call ivdec, pass name, type, and integer value
-	
-		case ILVDEC:
-			// call ivdec, pass name, type, and integer value
-	
-		case SVDEC:
-			// call ivdec, pass name, type, and integer value
-	
-		case CVDEC:
-			// call ivdec, pass name, type, and integer value
-	
-		case FVDEC:
-		// call ivdec, pass name, type, and integer value
+			variable_stack_insert(e->variable_stack, t->val1.id, fcall_stack_pop(fcall_stack), false); return ret;
 		
+		case SLFC:
+    			fcall_stack_push(fcall_stack, arg1);
+			push_scope(e->variable_stack);
+			ret.val.slist=ex(function_map_get(e->function_map, t->val1.id),e).val.slist;
+			pop_scope(e->variable_stack); return ret;		
+		case CLFC:
+    			fcall_stack_push(fcall_stack, arg1);
+			push_scope(e->variable_stack);
+			ret.val.clist=ex(function_map_get(e->function_map, t->val1.id),e).val.clist;
+			pop_scope(e->variable_stack); return ret;
+		case FLFC:
+    			fcall_stack_push(fcall_stack, arg1);
+			push_scope(e->variable_stack);
+			ret.val.flist=ex(function_map_get(e->function_map, t->val1.id),e).val.flist;
+			pop_scope(e->variable_stack); return ret;
+		case ILFC:
+    			fcall_stack_push(fcall_stack, arg1);
+			push_scope(e->variable_stack);
+			ret.val.ilist=ex(function_map_get(e->function_map, t->val1.id),e).val.ilist;
+			pop_scope(e->variable_stack); return ret;
+		case SFC:
+    			fcall_stack_push(fcall_stack, arg1);
+			push_scope(e->variable_stack);
+			ret.val.str=ex(function_map_get(e->function_map, t->val1.id),e).val.str;
+			pop_scope(e->variable_stack); return ret;
+		case CFC:
+    			fcall_stack_push(fcall_stack, arg1);
+			push_scope(e->variable_stack);
+			ret.val.cmpx=ex(function_map_get(e->function_map, t->val1.id),e).val.cmpx;
+			pop_scope(e->variable_stack); return ret;
+		case FFC:
+    			fcall_stack_push(fcall_stack, arg1);
+			push_scope(e->variable_stack);
+			ret.val.real=ex(function_map_get(e->function_map, t->val1.id),e).val.real;
+			pop_scope(e->variable_stack); return ret;
+		case IFC:
+			push_scope(e->variable_stack);
+			ret.val.integer=ex(function_map_get(e->function_map, t->val1.id),e).val.integer;
+			pop_scope(e->variable_stack); return ret;
+		case FARGS:
+			// AFTER REVISION OF RIGHT RECURSIONS 
+			/*	
+    			ex(t->c[0],e);
+			int *arg1 = malloc(sizeof(int));
+    			*arg1 = 10;
+			fcall_stack_push(fcall_stack, arg1);
+			*/
+
+		// no globals yet. keyword? automatic?
+		case SLVDEC:
+			variable_stack_insert(e->variable_stack, t->val1.id, ex(t->c[0],e).val.slist, false); return ret;
+		case CLVDEC:
+			variable_stack_insert(e->variable_stack, t->val1.id, ex(t->c[0],e).val.clist, false); return ret;
+		case FLVDEC:
+			variable_stack_insert(e->variable_stack, t->val1.id, ex(t->c[0],e).val.flist, false); return ret;
+		case ILVDEC:
+			variable_stack_insert(e->variable_stack, t->val1.id, ex(t->c[0],e).val.ilist, false); return ret;	
+		case SVDEC::
+			variable_stack_insert(e->variable_stack, t->val1.id, ex(t->c[0],e).val.str, false); return ret;
+		case CVDEC::
+			variable_stack_insert(e->variable_stack, t->val1.id, ex(t->c[0],e).val.cmpx, false); return ret;
+		case FVDEC::
+			variable_stack_insert(e->variable_stack, t->val1.id, ex(t->c[0],e).val.real, false); return ret;
 		case IVDEC:
-			// call ivdec, pass name, type, and integer value
+			variable_stack_insert(e->variable_stack, t->val1.id, ex(t->c[0],e).val.integer, false); return ret;
+
 		case ELIST:
-			// do	
+			// AFTER left RECURSION SOLUTION	
 		case ILADD:
+			// CONTINUE HERE
 			// do
 		case ILSLICE:
 			// do
