@@ -76,6 +76,12 @@ void pop_scope(VariableStack *stack);
 void variable_stack_insert(VariableStack *stack, const char *name, void *value, bool is_global);
 void *variable_stack_get(VariableStack *stack, const char *name);
 
+// FCallStack management
+FCallStack *create_fcall_stack(int capacity);
+void fcall_stack_push(FCallStack *stack, void *value);
+void *fcall_stack_pop(FCallStack *stack);
+void free_fcall_stack(FCallStack *stack);
+
 typedef struct ExecutionContext {
     VariableStack *variable_stack;
     FunctionMap *function_map;

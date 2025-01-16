@@ -86,5 +86,21 @@ int compare_double_lists(DoubleLinkedList *list1, DoubleLinkedList *list2);
 int compare_string_lists(StringLinkedList *list1, StringLinkedList *list2);
 int compare_complex_lists(ComplexLinkedList *list1, ComplexLinkedList *list2);
 
+// linked list clone functions
+IntLinkedList *int_list_cloneadd(IntLinkedList *list, int value);
+IntLinkedList *int_list_cloneappend(IntLinkedList *list1, IntLinkedList *list2);
+DoubleLinkedList *double_list_cloneadd(DoubleLinkedList *list, double value);
+DoubleLinkedList *double_list_cloneappend(DoubleLinkedList *list1, DoubleLinkedList *list2);
+StringLinkedList *string_list_cloneadd(StringLinkedList *list, const char *value);
+StringLinkedList *string_list_cloneappend(StringLinkedList *list1, StringLinkedList *list2);
+ComplexLinkedList *complex_list_cloneadd(ComplexLinkedList *list, double _Complex value);
+ComplexLinkedList *complex_list_cloneappend(ComplexLinkedList *list1, ComplexLinkedList *list2);
+
+// linked list clone slice function
+IntLinkedList *int_list_cloneslice(IntLinkedList *list, int a, int b);
+DoubleLinkedList *double_list_cloneslice(DoubleLinkedList *list, int a, int b);
+StringLinkedList *string_list_cloneslice(StringLinkedList *list, int a, int b);
+ComplexLinkedList *complex_list_cloneslice(ComplexLinkedList *list, int a, int b);
+
 #endif // LINKED_LIST_LIBRARY_H
 

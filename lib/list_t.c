@@ -276,6 +276,198 @@ int compare_lists(void *list1, void *list2, SymbolType type) {
     }
 }
 
+// Clone add and clone append functions for integer linked list
+IntLinkedList *int_list_cloneadd(IntLinkedList *list, int value) {
+    IntLinkedList *new_list = create_int_list();
+    IntListNode *current = list->head;
+
+    while (current) {
+        int_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    int_list_add(new_list, value);
+    return new_list;
+}
+
+IntLinkedList *int_list_cloneappend(IntLinkedList *list1, IntLinkedList *list2) {
+    IntLinkedList *new_list = create_int_list();
+    IntListNode *current = list1->head;
+
+    while (current) {
+        int_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    current = list2->head;
+    while (current) {
+        int_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    return new_list;
+}
+
+IntLinkedList *int_list_cloneslice(IntLinkedList *list, int a, int b) {
+    IntLinkedList *new_list = create_int_list();
+    IntListNode *current = list->head;
+    int index = 0;
+
+    while (current) {
+        if (index >= a && index < b) {
+            int_list_add(new_list, current->value);
+        }
+        current = current->next;
+        index++;
+    }
+
+    return new_list;
+}
+
+// Clone add and clone append functions for double linked list
+DoubleLinkedList *double_list_cloneadd(DoubleLinkedList *list, double value) {
+    DoubleLinkedList *new_list = create_double_list();
+    DoubleListNode *current = list->head;
+
+    while (current) {
+        double_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    double_list_add(new_list, value);
+    return new_list;
+}
+
+DoubleLinkedList *double_list_cloneappend(DoubleLinkedList *list1, DoubleLinkedList *list2) {
+    DoubleLinkedList *new_list = create_double_list();
+    DoubleListNode *current = list1->head;
+
+    while (current) {
+        double_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    current = list2->head;
+    while (current) {
+        double_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    return new_list;
+}
+
+DoubleLinkedList *double_list_cloneslice(DoubleLinkedList *list, int a, int b) {
+    DoubleLinkedList *new_list = create_double_list();
+    DoubleListNode *current = list->head;
+    int index = 0;
+
+    while (current) {
+        if (index >= a && index < b) {
+            double_list_add(new_list, current->value);
+        }
+        current = current->next;
+        index++;
+    }
+
+    return new_list;
+}
+
+// Clone add and clone append functions for string linked list
+StringLinkedList *string_list_cloneadd(StringLinkedList *list, const char *value) {
+    StringLinkedList *new_list = create_string_list();
+    StringListNode *current = list->head;
+
+    while (current) {
+        string_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    string_list_add(new_list, value);
+    return new_list;
+}
+
+StringLinkedList *string_list_cloneappend(StringLinkedList *list1, StringLinkedList *list2) {
+    StringLinkedList *new_list = create_string_list();
+    StringListNode *current = list1->head;
+
+    while (current) {
+        string_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    current = list2->head;
+    while (current) {
+        string_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    return new_list;
+}
+
+StringLinkedList *string_list_cloneslice(StringLinkedList *list, int a, int b) {
+    StringLinkedList *new_list = create_string_list();
+    StringListNode *current = list->head;
+    int index = 0;
+
+    while (current) {
+        if (index >= a && index < b) {
+            string_list_add(new_list, current->value);
+        }
+        current = current->next;
+        index++;
+    }
+
+    return new_list;
+}
+
+// Clone add and clone append functions for complex linked list
+ComplexLinkedList *complex_list_cloneadd(ComplexLinkedList *list, double _Complex value) {
+    ComplexLinkedList *new_list = create_complex_list();
+    ComplexListNode *current = list->head;
+
+    while (current) {
+        complex_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    complex_list_add(new_list, value);
+    return new_list;
+}
+
+ComplexLinkedList *complex_list_cloneappend(ComplexLinkedList *list1, ComplexLinkedList *list2) {
+    ComplexLinkedList *new_list = create_complex_list();
+    ComplexListNode *current = list1->head;
+
+    while (current) {
+        complex_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    current = list2->head;
+    while (current) {
+        complex_list_add(new_list, current->value);
+        current = current->next;
+    }
+
+    return new_list;
+}
+
+ComplexLinkedList *complex_list_cloneslice(ComplexLinkedList *list, int a, int b) {
+    ComplexLinkedList *new_list = create_complex_list();
+    ComplexListNode *current = list->head;
+    int index = 0;
+
+    while (current) {
+        if (index >= a && index < b) {
+            complex_list_add(new_list, current->value);
+        }
+        current = current->next;
+        index++;
+    }
+
+    return new_list;
+}
+
 // Helper function to verify the list type
 SymbolType get_list_type(void *list) {
     if (((IntLinkedList *)list)->head && ((IntLinkedList *)list)->head->value) {

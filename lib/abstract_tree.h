@@ -10,8 +10,11 @@
 #include <list_t.h>
 #include <stack_t.h>
 
+typedef struct ExecutionContext ExecutionContext;
+
 enum {	STMTS = 1000, 
-	FUN=1100, FUNSIG=1099, FPARAMS=1101, FPARAM=1102, FCALL=1110, FARGS=1111, FARGV=1112, FARGF=1113, 
+	FUN=1100, FUNDEC=1098, FUNSIG=1099, FPARAMS=1101, FPARAM=1102, 
+	FCALL=1110, FARGS=1111, IFARG=1120, FFARG=1121, CFARG=1122, SFARG=1123, ILFARG=1124, FLFARG=1125, CLFARG=1126, SLFARG=1127,
 	IVDEC=1200, FVDEC=1201, CVDEC=1202, SVDEC=1203, ILVDEC=1210, FLVDEC=1211, CLVDEC=1212, SLVDEC=1213,
 	ILADD=1300, FLADD=1301, CLADD=1302, SLADD=1303, LEQ=1310, LNEQ=1311, ILSLICE=1320, FLSLICE=1321, CLSLICE=1322, SLSLICE=1323, ELIST=1330, 
 	ILIST=1331, ILISTS=1335, ILISTE=1336, FLIST=1332, FLISTS=1337, FLISTE=1338, CLIST=1333, CLISTS=1339, CLISTE=1340, SLIST=1334, SLISTS=1341, SLISTE=1342,
@@ -32,6 +35,7 @@ enum {	STMTS = 1000,
 	INMIN=1730, FNMIN=1731, CNMIN=1732,
 	INMINE=1740, FNMINE=1741, CNMINE=1742,
 	INGRTE=1750, FNGRTE=1751, CNGRTE=1752,
+	ILEQ=3000, ILNEQ=3001, FLEQ=3002, FLNEQ=3003, CLEQ=3004, CLNEQ=3005, SLEQ=3006, SLNEQ=3007,
 	
  	Integer=2000,Real=2001,Str=2002,
 	Int_var=2100,Float_var=2101,Str_var=2102,Cmpx_var=2103,
@@ -56,31 +60,18 @@ struct ast {
         DoubleLinkedList *flist;
         ComplexLinkedList *clist;
         StringLinkedList *slist;
-    } val1;
-    union {
-        int integer;
-	SymbolType set;
-	double real;
-        double _Complex compx;
-        char *str;
-        char *id;
-	IntLinkedList *ilist;
-        DoubleLinkedList *flist;
-        ComplexLinkedList *clist;
-        StringLinkedList *slist;
-    } val2;
+    } val;
     struct ast *c[MC];
 };
 typedef struct ast ast_t;
-
 
 struct slice {
 	int a;
 	int b;
 };
 typedef struct slice slice_t;
-// future execution
-struct ex {
+
+struct exval {
     union {
         int integer;
 	SymbolType set;
@@ -93,9 +84,10 @@ struct ex {
         ComplexLinkedList *clist;
         StringLinkedList *slist;
     	slice_t slice;
+	void *param;
     } val;
 };
-typedef struct ex ex_t; 
+typedef struct exval ex_t; 
 
 ast_t *node0(int type); 
 ast_t *node1(int type, ast_t *c1); 
