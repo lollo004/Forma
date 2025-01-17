@@ -314,7 +314,7 @@ IntLinkedList *int_list_cloneslice(IntLinkedList *list, int a, int b) {
     int index = 0;
 
     while (current) {
-        if (index >= a && index < b) {
+        if (index >= a && (b == -1 || index < b)) {
             int_list_add(new_list, current->value);
         }
         current = current->next;
@@ -362,7 +362,7 @@ DoubleLinkedList *double_list_cloneslice(DoubleLinkedList *list, int a, int b) {
     int index = 0;
 
     while (current) {
-        if (index >= a && index < b) {
+        if (index >= a && (b == -1 || index < b)) {
             double_list_add(new_list, current->value);
         }
         current = current->next;
@@ -410,7 +410,7 @@ StringLinkedList *string_list_cloneslice(StringLinkedList *list, int a, int b) {
     int index = 0;
 
     while (current) {
-        if (index >= a && index < b) {
+        if (index >= a && (b == -1 || index < b)) {
             string_list_add(new_list, current->value);
         }
         current = current->next;
@@ -458,7 +458,7 @@ ComplexLinkedList *complex_list_cloneslice(ComplexLinkedList *list, int a, int b
     int index = 0;
 
     while (current) {
-        if (index >= a && index < b) {
+        if (index >= a && (b == -1 || index < b)) {
             complex_list_add(new_list, current->value);
         }
         current = current->next;

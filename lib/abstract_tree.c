@@ -48,12 +48,12 @@ void print_ast(ast_t *t, int deep, const char *prefix) {
 
 int optimize(ast_t *t) { return 0; }
 
-/* Variables don't need to be stored with type, type is controlled by parser */
-
 int exec_env(ast_t *t) {
 	ExecutionContext *context = create_execution_context();
+	push_scope(context->variable_stack);	
 	optimize(t);
 	ex(t, context);	
+	pop_scope(context->variable_stack);
 	free_execution_context(context);
 	return 0;
 }
@@ -64,14 +64,12 @@ void *alloc_t(void *src, size_t size){
 	return ret;
 }
 
-ex_t ex(ast_t *t, ExecutionContext *e) { 
+ex_t ex(ast_t *t, ExecutionContext *e) {
 	ex_t ret = {.val.integer = 0};
 	if(!t) return ret;
-
 	switch (t->type) {
 		case STMTS:
 			return ex(t->c[0],e), ex(t->c[1],e);
-
 		case INEQ:
 			if(ex(t->c[0],e).val.integer==ex(t->c[1],e).val.integer) ret.val.integer++; 
 			return ret; 
@@ -140,102 +138,128 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			return ret;
 
 		case IWRITE:
-			printf("%d", ex(t->c[0],e).val.integer); return ret;
+			printf("%d\n", ex(t->c[0],e).val.integer); return ret;
 		case FWRITE:
-			printf("%lf", ex(t->c[0],e).val.real); return ret;
+			printf("%lf\n", ex(t->c[0],e).val.real); return ret;
 		case CWRITE:
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx;
-			printf("%.2lf %.2lfi", creal(ret.val.cmpx), cimag(ret.val.cmpx)); return ret;
+			printf("%.2lf %.2lfi\n", creal(ret.val.cmpx), cimag(ret.val.cmpx)); return ret;
 		case SWRITE:
-			printf("%s", ex(t->c[0],e).val.str); return ret;
+			printf("%s\n", ex(t->c[0],e).val.str); return ret;
+
 		case IREAD:
-			scanf("%d", &ret.val.integer); return ret;	
+			scanf("%d", &ret.val.integer); //printf("\n");
+			ret.val.any = alloc_t(&ret.val.integer, sizeof(int));
+			return ret;
 		case FREAD:
-			scanf("%lf", &ret.val.real); return ret;
+			scanf("%lf", &ret.val.real);
+			ret.val.any = alloc_t(&ret.val.real, sizeof(double));
+			return ret;
 		case SREAD:
-			scanf("%255[^\n]", ret.val.str); return ret;
+			char _s[255] = {0};
+			scanf("%255[^\n]", _s);
+			ret.val.any = strdup(_s);	
+			return ret;
 		case IF:
 			if(ex(t->c[1],e).val.integer) ex(t->c[0],e);
 			else ex(t->c[2],e); 
 			return ret;
-		case ELSE:
-			ex(t->c[0],e); return ret;
+		
 		case FUNDEC:
-			function_map_insert(e->function_map, t->val.id, t->c[0]); return ret;
+			function_map_insert(e->function_map, t->val.id, t->c[0]); 
+			return ret;
 		case FUN:
-			ex(t->c[0],e), ex(t->c[1],e); return ret;
-		case FPARAMS:
-			variable_stack_insert(e->variable_stack, t->val.id, fcall_stack_pop(e->call_stack), false); 
-			ex(t->c[1],e); return ret;
+			ex(t->c[0],e), ex(t->c[1],e); 
+			return ret;
 		case FPARAM:
-			variable_stack_insert(e->variable_stack, t->val.id, fcall_stack_pop(e->call_stack), false); return ret;
+			variable_stack_insert(e->variable_stack, t->val.id, fcall_stack_pop(e->call_stack), false); 
+			ex(t->c[0],e); 
+			return ret;
 		
 		/* Solve argument type situation*/
 		case SLFC:
-    			fcall_stack_push(e->call_stack, NULL);
+			ex(t->c[0],e);
 			push_scope(e->variable_stack);
 			ret.val.slist=ex(function_map_get(e->function_map, t->val.id),e).val.slist;
-			pop_scope(e->variable_stack); return ret;		
+			pop_scope(e->variable_stack); 
+			return ret;		
 		case CLFC:
-    			fcall_stack_push(e->call_stack, NULL);
+			ex(t->c[0],e);
 			push_scope(e->variable_stack);
 			ret.val.clist=ex(function_map_get(e->function_map, t->val.id),e).val.clist;
-			pop_scope(e->variable_stack); return ret;
+			pop_scope(e->variable_stack); 
+			return ret;
 		case FLFC:
-    			fcall_stack_push(e->call_stack, NULL);
+    			ex(t->c[0],e);
 			push_scope(e->variable_stack);
 			ret.val.flist=ex(function_map_get(e->function_map, t->val.id),e).val.flist;
-			pop_scope(e->variable_stack); return ret;
+			pop_scope(e->variable_stack); 
+			return ret;
 		case ILFC:
-    			fcall_stack_push(e->call_stack, NULL);
+    			ex(t->c[0],e);
 			push_scope(e->variable_stack);
 			ret.val.ilist=ex(function_map_get(e->function_map, t->val.id),e).val.ilist;
-			pop_scope(e->variable_stack); return ret;
+			pop_scope(e->variable_stack); 
+			return ret;
 		case SFC:
-    			fcall_stack_push(e->call_stack, NULL);
+			ex(t->c[0],e);
 			push_scope(e->variable_stack);
 			ret.val.str=ex(function_map_get(e->function_map, t->val.id),e).val.str;
-			pop_scope(e->variable_stack); return ret;
+			pop_scope(e->variable_stack); 
+			return ret;
 		case CFC:
-    			fcall_stack_push(e->call_stack, NULL);
+    			ex(t->c[0],e);
 			push_scope(e->variable_stack);
 			ret.val.cmpx=ex(function_map_get(e->function_map, t->val.id),e).val.cmpx;
-			pop_scope(e->variable_stack); return ret;
+			pop_scope(e->variable_stack); 
+			return ret;
 		case FFC:
-    			fcall_stack_push(e->call_stack, NULL);
+			ex(t->c[0],e);
 			push_scope(e->variable_stack);
 			ret.val.real=ex(function_map_get(e->function_map, t->val.id),e).val.real;
-			pop_scope(e->variable_stack); return ret;
+			pop_scope(e->variable_stack); 
+			return ret;
 		case IFC:
+			ex(t->c[0],e);
 			push_scope(e->variable_stack);
 			ret.val.integer=ex(function_map_get(e->function_map, t->val.id),e).val.integer;
-			pop_scope(e->variable_stack); return ret;
+			pop_scope(e->variable_stack); 
+			return ret;
 		case FARGS:
 			ex(t->c[0],e), ex(t->c[1],e);
+			return ret;
 		case IFARG:
 			ret.val.integer = ex(t->c[0],e).val.integer;
 			fcall_stack_push(e->call_stack, alloc_t(&ret.val.integer, sizeof(int)));	
+			return ret;
 		case FFARG:
 			ret.val.real = ex(t->c[0],e).val.real;
 			fcall_stack_push(e->call_stack, alloc_t(&ret.val.real, sizeof(double)));
+			return ret;
 		case CFARG:
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx;
 			fcall_stack_push(e->call_stack, alloc_t(&ret.val.cmpx, sizeof(_Complex)));
+			return ret;
 		case SFARG:
 			ret.val.str = ex(t->c[0],e).val.str;
 			fcall_stack_push(e->call_stack, ret.val.str);
+			return ret;
 		case ILFARG:
 			ret.val.ilist = ex(t->c[0],e).val.ilist;
 			fcall_stack_push(e->call_stack, ret.val.ilist);
+			return ret;
 		case FLFARG:
 			ret.val.flist = ex(t->c[0],e).val.flist;
 			fcall_stack_push(e->call_stack, ret.val.flist);
+			return ret;
 		case CLFARG:
 			ret.val.clist = ex(t->c[0],e).val.clist;
 			fcall_stack_push(e->call_stack, ret.val.clist);
+			return ret;
 		case SLFARG:
 			ret.val.slist = ex(t->c[0],e).val.slist;
 			fcall_stack_push(e->call_stack, ret.val.slist);
+			return ret;
 
 		// no globals yet. keyword? automatic?
 		case SLVDEC:
@@ -250,22 +274,22 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			variable_stack_insert(e->variable_stack, t->val.id, ex(t->c[0],e).val.str, false); return ret;
 		case CVDEC:
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx;
-			_Complex *_c = malloc(sizeof(_Complex)); memcpy(_c, &ret.val.cmpx, sizeof(_Complex));
-			variable_stack_insert(e->variable_stack, t->val.id, _c, false); return ret;
+			variable_stack_insert(e->variable_stack, t->val.id, alloc_t(&ret.val.cmpx, sizeof(_Complex)), false); return ret;
 		case FVDEC:
 			ret.val.real = ex(t->c[0],e).val.real;
-			double *_d = malloc(sizeof(double)); memcpy(_d, &ret.val.real, sizeof(double));
-			variable_stack_insert(e->variable_stack, t->val.id, _d, false); return ret;
+			variable_stack_insert(e->variable_stack, t->val.id, alloc_t(&ret.val.real, sizeof(double)), false);
+			return ret;	
 		case IVDEC:
 			ret.val.integer = ex(t->c[0],e).val.integer;
-			int *_i = malloc(sizeof(int)); memcpy(_i, &ret.val.integer, sizeof(int));
-			variable_stack_insert(e->variable_stack, t->val.id, _i, false); return ret;
+			variable_stack_insert(e->variable_stack, t->val.id, alloc_t(&ret.val.integer, sizeof(int)), false); return ret;
+		case RVDEC:
+			variable_stack_insert(e->variable_stack, t->val.id, ex(t->c[0],e).val.any, false); return ret;
 
 		case ELIST:
+			return ret;
 			// AFTER left RECURSION SOLUTION	
 		
 
-		// ret.val.ilist = int_list_cloneadd(ex(t->c[0],e).val.ilist, ex(t->c[1],e).val.ilist);
 		case ILADD: // this is append in reality
 			ret.val.ilist = int_list_cloneappend(ex(t->c[0],e).val.ilist, ex(t->c[1],e).val.ilist); return ret;	
 		case ILSLICE:
@@ -282,6 +306,43 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			ret.val.slist = string_list_cloneappend(ex(t->c[0],e).val.slist, ex(t->c[1],e).val.slist); return ret;	
 		case SLSLICE:
 			ret.val.slist = string_list_cloneslice(ex(t->c[0],e).val.slist, ex(t->c[1],e).val.slice.a, ex(t->c[1],e).val.slice.b); return ret;
+		
+		case ILISTE:
+			ret.val.ilist = create_int_list();
+			if(!t->c[0]) return ret;
+			t->c[0]->val.any = ret.val.ilist; 
+			ex(t->c[0],e); 
+			return ret;
+		case FLISTE:
+			ret.val.flist = create_double_list();
+			if(!t->c[0]) return ret;
+			t->c[0]->val.flist = ret.val.flist; ex(t->c[0],e); 
+			return ret;
+		case CLISTE:
+			ret.val.clist = create_complex_list();
+			if(!t->c[0]) return ret;
+			t->c[0]->val.clist = ret.val.clist; ex(t->c[0],e); 
+			return ret;
+		case SLISTE:
+			ret.val.slist = create_string_list();
+			if(!t->c[0]) return ret;
+			t->c[0]->val.slist = ret.val.slist; ex(t->c[0],e); 
+			return ret;
+		case LISTS:
+			t->c[0]->val.any = t->val.any; t->c[1]->val.any = t->val.any;
+			ex(t->c[0],e), ex(t->c[1],e);
+		case ILIST:
+			int_list_add(t->val.any, ex(t->c[0],e).val.integer);
+			return ret;
+		case FLIST:
+			double_list_add(t->val.any, ex(t->c[0],e).val.real);
+			return ret;
+		case CLIST:
+			complex_list_add(t->val.any, ex(t->c[0],e).val.cmpx);
+			return ret;
+		case SLIST:
+			string_list_add(t->val.any, ex(t->c[0],e).val.str);
+			return ret;
 
 		case SADD:
 			char *p1=ex(t->c[0],e).val.str,*p2=ex(t->c[1],e).val.str;
@@ -291,48 +352,24 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			return ret;
 		case SSLICE:
 			char *p=ex(t->c[0],e).val.str; slice_t s=ex(t->c[1],e).val.slice;
-			if(strlen(p) < s.b) { printf("String index outbound: %d\n", t->type);
-			break; }
+			if(s.b == -1) s.b = strlen(p)-1;	
+			else if(strlen(p) <= s.b) { printf("String index outbound: %d\n", t->type); break; }
 			ret.val.str = calloc(s.b-s.a+1, sizeof(char));
 			memcpy(ret.val.str, p+s.a, s.b-s.a);
 		case SLICEI:
-			ret.val.slice.a=ret.val.slice.b=ex(t->c[0],e).val.integer; return ret;
+			ret.val.slice.a=ret.val.slice.b=ex(t->c[0],e).val.integer; 
+			return ret;
 		case SLICE:
-			ret.val.slice.a=ex(t->c[0],e).val.integer; ret.val.slice.b=ex(t->c[1],e).val.integer; return ret;
+			ret.val.slice.a=ex(t->c[0],e).val.integer; ret.val.slice.b=ex(t->c[1],e).val.integer; 
+			return ret;
 		case SLICER:
-			ret.val.slice.b=0;ret.val.slice.b=ex(t->c[0],e).val.integer; return ret;
-
+			ret.val.slice.b=-1;ret.val.slice.a=ex(t->c[0],e).val.integer; 
+			return ret;
 		case SLICEL:
-			ret.val.slice.a=0;ret.val.slice.b=ex(t->c[0],e).val.integer; return ret;
+			ret.val.slice.a=0;ret.val.slice.b=ex(t->c[0],e).val.integer; 
+			return ret;
 			
-		case ILISTE:
-			/* AFTER RIGHT RECURSION IS REVISED.. */
-			ret.val.ilist = create_int_list();
-			t->c[0]->val.ilist = ret.val.ilist; ex(t->c[0],e); return ret;
-		case ILISTS:
-			/* AFTER RIGHT RECURSION IS REVISED.. */	
-			
-		case ILIST:
-			// Append element [0]
-		case FLISTE:
-			// release_and_clear buffer and return list_pointer
-		case FLISTS:
-			// Append element ex(t->c[0]) 
-		case FLIST:
-			// Append element [0]
-		case CLISTE:
-			// release_and_clear buffer and return list_pointer
-		case CLISTS:
-			// Append element ex(t->c[0]) 
-		case CLIST:
-			// Append element [0]
-		case SLISTE:
-			// release_and_clear buffer and return list_pointer
-		case SLISTS:
-			// Append element ex(t->c[0]) 
-		case SLIST:
-			// Append element [0]
-			
+					
 		case CADD: 
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx+ex(t->c[1],e).val.cmpx; return ret;
 		case CMNS: 
@@ -345,6 +382,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			ret.val.cmpx = ex(t->c[1],e).val.real+ex(t->c[0],e).val.real*I; return ret;
 		case CNUMMNS:
 			ret.val.cmpx = -ex(t->c[1],e).val.real+ex(t->c[0],e).val.real*I; return ret;
+		
 		case IMNS:
 			ret.val.integer = ex(t->c[0],e).val.integer-ex(t->c[1],e).val.integer; return ret;
 		case IADD:
@@ -365,7 +403,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			ret.val.real = ex(t->c[0],e).val.real/ex(t->c[1],e).val.real; return ret;
 		case FPOW:
 			ret.val.real = pow(ex(t->c[0],e).val.real,ex(t->c[1],e).val.real); return ret;
-		 return ret;
+		
 		case Str:
 			ret.val.str = t->val.str; return ret;
 		case Real:

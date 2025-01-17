@@ -1,25 +1,21 @@
-# Created by lollo004, 17/12/2024 
+% Created by lollo004, 17/12/2024 
 
-hanoi: S x S x S -> None
+hanoi: N * S * S * S => N;
 
-hanoi(src, dst, aux) => {
-        """
-        Recursive solution to the Tower of Hanoi problem.
+def hanoi(n, src, dst, aux) {
+        % Recursive solution to the Tower of Hanoi problem.
+	?
+		write src + " -> " + dst, 
+		if n == 1;
+		hanoi(n - 1, src, aux, dst),
+        	write src + " -> " + dst,
+        	hanoi(n - 1, aux, dst, src), 
+		else;
+	?;
+};
 
-        Parameters:
-        n : int - Number of disks
-        source : str - The starting rod
-        destination : str - The target rod
-        auxiliary : str - The helper rod
-        """
-	print "..", if n == 1,
-	hanoi(n - 1, origin, auxiliary, destination),
-        print "Move disk from " + origin + " to " + destination,
-        hanoi(n - 1, auxiliary, destination, origin), else;
-}
+let origin: S = "Source";
+let destination: S = "Destination";
+let auxiliary: S = "Auxiliary";
 
-src: S = "Source";
-dst: S = "Destination";
-aux: S = "Auxiliary";
-
-hanoi(3, src, dst, aux);
+hanoi(5, origin, destination, auxiliary);

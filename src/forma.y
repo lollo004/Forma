@@ -14,6 +14,7 @@ extern void yyerror(const char *msg) {
 	printf("Parse error at Line %d: %s\n", yylineno, msg);
 }
 
+char *curr_func_node = NULL; // not beautiful
 StaticScopeStack *_staticstack;
 
 static int ASTDEBUG=1;
@@ -36,16 +37,16 @@ static int ASTDEBUG=1;
 
 %define parse.error detailed
 
-%token <ast> _if _else _return _header _do
+%token <ast> _if _else _return _header _il _fl _cl _sl
 %token let def arrow _read _write eq neq mine grte <ch> set
 %token <integer> integer <real> real <str> str imgr 
 %token <id> int_var float_var str_var cmpx_var intlist_var floatlist_var strlist_var cmpxlist_var int_fun float_fun str_fun cmpx_fun intlist_fun floatlist_fun strlist_fun cmpxlist_fun new_id
 
-%type <ast> VDEC
+%type <ast> VDEC CSTMTS
 %type <ast> NEWID ANYID INTVAR FLOATVAR STRVAR CMPXVAR ILISTVAR FLISTVAR SLISTVAR CLISTVAR
 %type <ast> INTFUN FLOATFUN STRFUN CMPXFUN ILISTFUN FLISTFUN SLISTFUN CLISTFUN
 %type <ast> INT FLOAT STR S STMTS STMT TERM FDEF FBODY LISTVAR STERM CTERM STRING FUNC IFC FCARGS FFC SFC CFC ILFC FLFC SLFC CLFC 
-%type <ast> ILTERM FLTERM CLTERM SLTERM ILIST FLIST CLIST SLIST SLICE INARGS FNARGS CNARGS SARGS INTERM FNTERM INUM FNUM CNUM COND FBODYS
+%type <ast> READ ILTERM FLTERM CLTERM SLTERM ILIST FLIST CLIST SLIST SLICE INARGS FNARGS CNARGS SARGS INTERM FNTERM INUM FNUM CNUM COND FBODYS
 %type <fparams> FDECARGS
 %type <fargs> FBARGS
 
@@ -56,7 +57,7 @@ static int ASTDEBUG=1;
 %left '['
 %%
 
-S:	STMTS { ASTD printf("\n"); ASTD print_ast($1, 0, ""); ASTD printf("\n"); /*ASTD print_static_scope_stack(_staticstack);*/ }
+S:	STMTS { ASTD printf("\n"); ASTD print_ast($1, 0, ""); ASTD printf("\nStarting Execution.\n"); exec_env($1); }
  ;
 STMTS:	STMTS STMT ';' { $$ = node2(STMTS, $1, $2);}
      |  STMTS SASTMT ';' {} // no action on SA
@@ -70,19 +71,16 @@ STMT:	TERM //d
     |	_write FNTERM { $$ = node1(FWRITE, $2); }
     |	_write CTERM { $$ = node1(CWRITE, $2); }
     |	_write STERM { $$ = node1(SWRITE, $2); }
-    |	_read set { 
-	if(set == 'N' || set == 'I') $$ = node0(IREAD); 
-	if(set == 'R') $$ = node0(FREAD);
-	else $$ = node0(SREAD); }
     |	'?' COND '?' { $$ = $2; }
     |   VDEC //d
     |   FBODY //d
     |	_return TERM { $$ = node1(_return, $2); }
 
-// problem, can exist _else without _if .
-COND:	STMT ',' _if TERM { $$ = node3(IF, $1, $4, NULL); }
-    |	STMT ',' _else { $$ = node1(ELSE, $1); }
-    |	STMT ',' _if TERM ',' COND { $$ = node3(IF, $1, $4, $6); }
+COND:	CSTMTS _if TERM { $$ = node3(IF, $1, $3, NULL); }
+    |	CSTMTS _if TERM ';' CSTMTS _else ';' { $$ = node3(IF, $1, $3, $5); }
+
+CSTMTS:	CSTMTS STMT ',' { $$ = node2(STMTS, $1, $2); }
+      |	%empty { $$ = NULL; }
 
 /* BEGIN - Static purpose only */
 FDEF:	new_id ':' FDECARGS arrow set '[' ']' { 
@@ -108,36 +106,31 @@ FDECARGS:	FDECARGS '*' set {$$ = $1; $$->params[$$->nparams] = set_to_enumtype($
 	|	'(' FDECARGS arrow set '[' ']' ')' {$$ = calloc(1, sizeof(struct fparams)); $$->params[$$->nparams] = set_to_enumtype($4, 1); free($2); $$->natparams[($$->nparams)++] = NATURE_FUNCTION;}
 /* END - Static purpose only */
 
-FBODY:	FBODYS '{' STMTS '}' { 	ast_t *tmp = node2(FUN, $1, $3);
-				$$ = node1(FUNDEC, tmp); $$->val.id = $1->val.id;}
+FBODY:	FBODYS '{' STMTS '}' { $$ = node1(FUNDEC, node2(FUN, $1, $3)); $$->val.id = curr_func_node; }
 
 FBODYS:	def FUNC '(' FBARGS ')' { 
+	curr_func_node = $2->val.id; // global
 	Symbol *symbol = find_static_symbol(_staticstack, $2->val.id);
 	if($4 == NULL) {
 		if(symbol->nparams != 0) { 
 			printf("FuncError: %s signature not matching declaration!\n", $2->val.id);return -1;}
-		// no params
-		$$ = node1(FUNSIG, NULL);
-		$$->val.id = strdup($2->val.id); // is strdup necessary?
+		$$ = node1(FPARAM, NULL);
 	}
 	else if(symbol->nparams != $4->nargs) { 
 		printf("FuncError: %s signature not matching declaration!\n", $2->val.id);return -1;
 	}
 	else {
 		// signature is matching
-		ast_t **pnodes = malloc(sizeof(ast_t *) * $4->nargs);	
+		ast_t **pnodes = malloc(sizeof(ast_t *) * $4->nargs);
 		add_static_symbol(_staticstack, $4->args[0], symbol->params[0], symbol->natparams[0], 0);
-		ast_t *tmp = node0(set); tmp->val.integer = symbol->params[0]; 
-		pnodes[0] = node1(FPARAM, tmp);
+		pnodes[0] = node1(FPARAM, NULL);
 		pnodes[0]->val.id = $4->args[0];
 		for(int i=1;i<$4->nargs;i++){
 			add_static_symbol(_staticstack, $4->args[i], symbol->params[i], symbol->natparams[i], 0);
-			ast_t *tmp = node0(set); tmp->val.integer = symbol->params[i];
-			pnodes[i] = node2(FPARAMS, tmp, pnodes[i-1]);
+			pnodes[i] = node1(FPARAM, pnodes[i-1]);
 			pnodes[i]->val.id = $4->args[i];
 		} 
-		$$ = node1(FUNSIG, pnodes[$4->nargs-1]);
-		$$->val.id = strdup($2->val.id); //is strdup necessary?
+		$$ = pnodes[$4->nargs-1];
 		free(pnodes);
 	}
 }
@@ -192,9 +185,17 @@ VDEC:	let new_id ':' set '=' INTERM {
     |	let new_id '[' ']' ':' set '=' SLTERM { 
 	add_static_symbol(_staticstack, $2, set_to_enumtype($6, 1), NATURE_VARIABLE, 0); 
 	$$ = node1(SLVDEC, $8); $$->val.id = $2; }
+    |	let new_id ':' READ {
+	add_static_symbol(_staticstack, $2, $4->val.set, NATURE_VARIABLE, 0);
+	$$ = node1(RVDEC, $4);
+	}
 
-
-
+READ:	set '=' _read { 
+	if($1 == 'N' || $1 == 'I') $$ = node0(IREAD); 
+	if($1 == 'R') $$ = node0(FREAD);
+	else $$ = node0(SREAD);
+	$$->val.set = set_to_enumtype($1, 0); 
+	}
 
 ANYID:	INTVAR | FLOATVAR | STRVAR | LISTVAR | FUNC | NEWID
 // VALUE:	INUM | FNUM | CTERM | STRING | LIST 
@@ -213,62 +214,67 @@ TERM:	INTERM
 ILTERM:	ILTERM '+' ILTERM { $$ = node2(ILADD, $1, $3); }
      |  ILTERM eq ILTERM { $$ = node2(ILEQ, $1, $3); }
      |	ILTERM neq ILTERM { $$ = node2(ILNEQ, $1, $3); }
-     |	ILTERM SLICE { $$ = node2(ILSLICE, $1, $2); }
+     |	ILIST SLICE { $$ = node2(ILSLICE, $1, $2); }
      |	ILIST //d
 
 FLTERM:	FLTERM '+' FLTERM { $$ = node2(FLADD, $1, $3); }
      |  FLTERM eq FLTERM { $$ = node2(FLEQ, $1, $3); }
      |	FLTERM neq FLTERM { $$ = node2(FLNEQ, $1, $3); }
-     |	FLTERM SLICE { $$ = node2(FLSLICE, $1, $2); }
+     |	FLIST SLICE { $$ = node2(FLSLICE, $1, $2); }
      |	FLIST //d
 
 CLTERM:	CLTERM '+' CLTERM { $$ = node2(CLADD, $1, $3); }
      |  CLTERM eq CLTERM { $$ = node2(CLEQ, $1, $3); }
      |	CLTERM neq CLTERM { $$ = node2(CLNEQ, $1, $3); }
-     |	CLTERM SLICE { $$ = node2(CLSLICE, $1, $2); }
+     |	CLIST SLICE { $$ = node2(CLSLICE, $1, $2); }
      |	CLIST //d
 
 SLTERM:	SLTERM '+' SLTERM { $$ = node2(SLADD, $1, $3); }
      |  SLTERM eq SLTERM { $$ = node2(SLEQ, $1, $3); }
      |	SLTERM neq SLTERM { $$ = node2(SLNEQ, $1, $3); }
-     |	SLTERM SLICE { $$ = node2(SLSLICE, $1, $2); }
+     |	SLIST SLICE { $$ = node2(SLSLICE, $1, $2); }
      |	SLIST //d
 
-ILIST:	'[' INARGS ']' { $$ = node1(ILISTE, $2); } 
-    |	ILISTVAR //d
-    |	ILFC //d
+ILIST:	'[' INARGS ']' 	{ $$ = node1(ILISTE, $2); } 
+     |	ILISTVAR //d
+     |	ILFC //d
+     |	_il		{ $$ = node1(ILISTE, NULL); }
 
 FLIST:	'[' FNARGS ']' { $$ = node1(FLISTE, $2); }
-    |	FLISTVAR //d
-    |	FLFC //d
+     |	FLISTVAR //d
+     |	FLFC //d
+     |	_fl		{ $$ = node1(FLISTE, NULL); }
 
 CLIST:	'[' CNARGS ']' { $$ = node1(CLISTE, $2); }
-    |	CLISTVAR //d
-    |	CLFC //d
+     |	CLISTVAR //d
+     |	CLFC //d
+     |	_cl		{ $$ = node1(CLISTE, NULL); }
+
 SLIST:	'[' SARGS ']' { $$ = node1(SLISTE, $2); }
-    |	SLISTVAR //d
-    |	SLFC //d
+     |	SLISTVAR //d
+     |	SLFC //d
+     |	_sl		{ $$ = node1(SLISTE, NULL); }
 
 LISTVAR:	ILISTVAR | FLISTVAR | SLISTVAR | CLISTVAR //d
 
 /* LIST UTILS */
-INARGS:	INARGS ',' INARGS { $$ = node2(ILISTS, $1, $3); }
+INARGS:	INARGS ',' INARGS { $$ = node2(LISTS, $1, $3); }
       |	INTERM { $$ = node1(ILIST, $1); }
 
-FNARGS: FNARGS ',' FNARGS { $$ = node2(FLISTS, $1, $3); }
+FNARGS: FNARGS ',' FNARGS { $$ = node2(LISTS, $1, $3); }
       | FNTERM { $$ = node1(FLIST, $1); }
 
-CNARGS: CNARGS ',' CNARGS { $$ = node2(CLISTS, $1, $3); }
+CNARGS: CNARGS ',' CNARGS { $$ = node2(LISTS, $1, $3); }
       | CTERM { $$ = node1(CLIST, $1); }
 
-SARGS:	SARGS ',' SARGS { $$ = node2(SLIST, $1, $3); }
+SARGS:	SARGS ',' SARGS { $$ = node2(LISTS, $1, $3); }
      |	STERM { $$ = node1(SLIST, $1); }
 
 // ---- STRING TERM
 STERM:	STERM '+' STERM { $$ = node2(SADD, $1, $3); }
      |  STERM eq STERM { $$ = node2(SEQ, $1, $3); }
      |  STERM neq STERM { $$ = node2(SNEQ, $1, $3); }
-     |  STERM SLICE { $$ = node2(SSLICE, $1, $2); }
+     |  STRING SLICE { $$ = node2(SSLICE, $1, $2); }
      |	STRING //d
 
 STRING:		STR | STRVAR | SFC

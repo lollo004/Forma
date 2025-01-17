@@ -7,7 +7,6 @@
 #include <errno.h>
 
 void yyerror(const char *msg);
-
 extern StaticScopeStack *_staticstack;
 %}
 
@@ -29,7 +28,10 @@ STRING_ESCAPE        	\\\"
 BINARY       		0b[01]+
 OCTAL        		0o[0-7]+
 HEXADECIMAL  		0x[0-9a-fA-F]+
-DO			do
+IL			i\[\]
+FL			f\[\]
+CL			c\[\]
+SL			s\[\]
 IF           		if
 ELSE         		else
 RETURN			return
@@ -47,17 +49,20 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 %%
 
 {NEWLINE} { /* For yylineno debug */ }
+{IL}	{ return _il; }
+{FL}	{ return _fl; }
+{CL}	{ return _cl; }
+{SL}	{ return _sl; }
 
 {HEADER}	{ return _header; }
 {IF} 	{ return _if; }
 {ELSE} 	{ return _else; }
-{DO}	{ return _do; }
 {RETURN}	{ return _return; }
 {IMGR}	{ return imgr; }
 {SET}	{ yylval.ch = *yytext; return set; }
 {LET}	{ return let; }
 {DEF}	{ enter_static_scope(_staticstack); return def; }
-"}" { exit_static_scope(_staticstack); return *yytext;}
+"}" { exit_static_scope(_staticstack); return *yytext; }
 
 {EQ}	{ return eq; }
 {NEQ}	{ return neq; }
