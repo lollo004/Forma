@@ -52,7 +52,8 @@ def str_n(char, n) {
 
 frame_line: S * N => N;
 def frame_line(word, max_len) {
-	write "* " + word + str_n(" ", max_len - strlen(word))+ " *";
+	write "* " + word + str_n(" ", max_len - strlen(word))+ " *\n";
+	return 0;
 };
 
 frame_lines: S[] * N => S[];
@@ -65,8 +66,8 @@ def frame_lines(words, max_len) {
 
 frame_border: N => N;
 def frame_border(max_len) {
-	write "calling frame_border";
-	write str_n("*", max_len);
+	write str_n("*", max_len) + "\n";
+	return 0;
 };
 
 frame: S => N;
@@ -75,10 +76,10 @@ def frame(sentence) {
 	write "Words splitted\n";
 	let max_length: N = max_len(words, 0);
 	write "Found maximum word length: "; write max_length; write "\n";
-	% this fcall brakes everything ?
-	frame_border(max_length);
+	frame_border(max_length + 4);
 	frame_lines(words, max_length);
-	frame_border(max_length);	
+	frame_border(max_length + 4);	
+	return 0;
 };
 
 write "Please input a sentence: ";
