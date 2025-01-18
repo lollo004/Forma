@@ -468,6 +468,54 @@ ComplexLinkedList *complex_list_cloneslice(ComplexLinkedList *list, int a, int b
     return new_list;
 }
 
+int *int_list_get_reference(IntLinkedList *list, size_t index) {
+    if (index >= list->size) {
+        return NULL; // Indice fuori dai limiti
+    }
+    IntListNode *current = list->head;
+    for (size_t i = 0; i < index; ++i) {
+        current = current->next;
+    }
+    return &(current->value);
+}
+
+double *double_list_get_reference(DoubleLinkedList *list, size_t index) {
+    if (index >= list->size) {
+        return NULL; // Indice fuori dai limiti
+    }
+    DoubleListNode *current = list->head;
+    for (size_t i = 0; i < index; ++i) {
+        current = current->next;
+    }
+    return &(current->value);
+}
+
+char *string_list_get_copy(StringLinkedList *list, size_t index) {
+    if (index >= list->size) {
+        return NULL; // Indice fuori dai limiti
+    }
+    StringListNode *current = list->head;
+    for (size_t i = 0; i < index; ++i) {
+        current = current->next;
+    }
+    char *copy = malloc(strlen(current->value) + 1);
+    if (copy) {
+        strcpy(copy, current->value);
+    }
+    return copy;    
+}
+
+double _Complex *complex_list_get_reference(ComplexLinkedList *list, size_t index) {
+    if (index >= list->size) {
+        return NULL; // Indice fuori dai limiti
+    }
+    ComplexListNode *current = list->head;
+    for (size_t i = 0; i < index; ++i) {
+        current = current->next;
+    }
+    return &(current->value);
+}
+
 // Helper function to verify the list type
 SymbolType get_list_type(void *list) {
     if (((IntLinkedList *)list)->head && ((IntLinkedList *)list)->head->value) {

@@ -9,7 +9,7 @@ def hanoi(n, src, dst, aux) {
 		if n == 1;
 		hanoi(n - 1, src, aux, dst),
         	write src + " -> " + dst,
-        	hanoi(n - 1, aux, dst, src), 
+		hanoi(n - 1, aux, dst, src), 
 		else;
 	?;
 };
@@ -18,4 +18,4 @@ let origin: S = "Source";
 let destination: S = "Destination";
 let auxiliary: S = "Auxiliary";
 
-hanoi(5, origin, destination, auxiliary);
+hanoi(6, origin, destination, auxiliary);

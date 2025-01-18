@@ -42,7 +42,7 @@ static int ASTDEBUG=1;
 %token <integer> integer <real> real <str> str imgr 
 %token <id> int_var float_var str_var cmpx_var intlist_var floatlist_var strlist_var cmpxlist_var int_fun float_fun str_fun cmpx_fun intlist_fun floatlist_fun strlist_fun cmpxlist_fun new_id
 
-%type <ast> VDEC CSTMTS
+%type <ast> VDEC CSTMTS RETURN 
 %type <ast> NEWID ANYID INTVAR FLOATVAR STRVAR CMPXVAR ILISTVAR FLISTVAR SLISTVAR CLISTVAR
 %type <ast> INTFUN FLOATFUN STRFUN CMPXFUN ILISTFUN FLISTFUN SLISTFUN CLISTFUN
 %type <ast> INT FLOAT STR S STMTS STMT TERM FDEF FBODY LISTVAR STERM CTERM STRING FUNC IFC FCARGS FFC SFC CFC ILFC FLFC SLFC CLFC 
@@ -55,6 +55,7 @@ static int ASTDEBUG=1;
 %left '*' '/'
 %left '^'
 %left '['
+%left '.'
 %%
 
 S:	STMTS { ASTD printf("\n"); ASTD print_ast($1, 0, ""); ASTD printf("\nStarting Execution.\n"); exec_env($1); }
@@ -74,10 +75,21 @@ STMT:	TERM //d
     |	'?' COND '?' { $$ = $2; }
     |   VDEC //d
     |   FBODY //d
-    |	_return TERM { $$ = node1(_return, $2); }
+    |	RETURN
+
+RETURN:	_return INTERM { $$ = node1(IRET, $2); }
+      |	_return FNTERM { $$ = node1(FRET, $2); }
+      |	_return CTERM { $$ = node1(CRET, $2); }
+      |	_return STERM { $$ = node1(SRET, $2); }
+      |	_return ILTERM { $$ = node1(ILRET, $2); }
+      |	_return FLTERM { $$ = node1(FLRET, $2); }
+      |	_return CLTERM { $$ = node1(CLRET, $2); }
+      |	_return SLTERM { $$ = node1(SLRET, $2); }
 
 COND:	CSTMTS _if TERM { $$ = node3(IF, $1, $3, NULL); }
-    |	CSTMTS _if TERM ';' CSTMTS _else ';' { $$ = node3(IF, $1, $3, $5); }
+    |	CSTMTS _if TERM ';' CSTMTS _else { $$ = node3(IF, $1, $3, $5); }
+    |	CSTMTS _if TERM ';' COND { $$ = node3(IF, $1, $3, $5); }
+
 
 CSTMTS:	CSTMTS STMT ',' { $$ = node2(STMTS, $1, $2); }
       |	%empty { $$ = NULL; }
@@ -173,25 +185,24 @@ VDEC:	let new_id ':' set '=' INTERM {
     |	let new_id ':' set '=' CTERM { 
 	add_static_symbol(_staticstack, $2, set_to_enumtype($4, 0), NATURE_VARIABLE, 0); 
 	$$ = node1(CVDEC, $6); $$->val.id = $2; }
-    |	let new_id '[' ']' ':' set '=' ILTERM { 
-	add_static_symbol(_staticstack, $2, set_to_enumtype($6, 1), NATURE_VARIABLE, 0); 
+    |	let new_id ':' set '[' ']' '=' ILTERM { 
+	add_static_symbol(_staticstack, $2, set_to_enumtype($4, 1), NATURE_VARIABLE, 0); 
 	$$ = node1(ILVDEC, $8); $$->val.id = $2; }
-    |	let new_id '[' ']' ':' set '=' FLTERM { 
-	add_static_symbol(_staticstack, $2, set_to_enumtype($6, 1), NATURE_VARIABLE, 0); 
+    |	let new_id ':' set '[' ']' '=' FLTERM { 
+	add_static_symbol(_staticstack, $2, set_to_enumtype($4, 1), NATURE_VARIABLE, 0); 
 	$$ = node1(FLVDEC, $8); $$->val.id = $2; }
-    |	let new_id '[' ']' ':' set '=' CLTERM { 
-	add_static_symbol(_staticstack, $2, set_to_enumtype($6, 1), NATURE_VARIABLE, 0); 
+    |	let new_id ':' set '[' ']' '=' CLTERM { 
+	add_static_symbol(_staticstack, $2, set_to_enumtype($4, 1), NATURE_VARIABLE, 0); 
 	$$ = node1(CLVDEC, $8); $$->val.id = $2; }
-    |	let new_id '[' ']' ':' set '=' SLTERM { 
-	add_static_symbol(_staticstack, $2, set_to_enumtype($6, 1), NATURE_VARIABLE, 0); 
+    |	let new_id ':' set '[' ']' '=' SLTERM { 
+	add_static_symbol(_staticstack, $2, set_to_enumtype($4, 1), NATURE_VARIABLE, 0); 
 	$$ = node1(SLVDEC, $8); $$->val.id = $2; }
     |	let new_id ':' READ {
 	add_static_symbol(_staticstack, $2, $4->val.set, NATURE_VARIABLE, 0);
-	$$ = node1(RVDEC, $4);
-	}
+	$$ = node1(RVDEC, $4); $$->val.id = $2; }
 
 READ:	set '=' _read { 
-	if($1 == 'N' || $1 == 'I') $$ = node0(IREAD); 
+	if($1 == 'N' || $1 == 'Z') $$ = node0(IREAD); 
 	if($1 == 'R') $$ = node0(FREAD);
 	else $$ = node0(SREAD);
 	$$->val.set = set_to_enumtype($1, 0); 
@@ -274,7 +285,8 @@ SARGS:	SARGS ',' SARGS { $$ = node2(LISTS, $1, $3); }
 STERM:	STERM '+' STERM { $$ = node2(SADD, $1, $3); }
      |  STERM eq STERM { $$ = node2(SEQ, $1, $3); }
      |  STERM neq STERM { $$ = node2(SNEQ, $1, $3); }
-     |  STRING SLICE { $$ = node2(SSLICE, $1, $2); }
+     |  STRING SLICE { $$ = node2(SSLICE, $1, $2); } 
+     |  SLTERM '.' INTERM { $$=node2(SSLICEI, $1, $3); }
      |	STRING //d
 
 STRING:		STR | STRVAR | SFC
@@ -285,13 +297,13 @@ SLICE:	'[' ':' INTERM ']' { $$ = node1(SLICEL, $3); }
      |	'[' INTERM ':' INTERM ']' { $$ = node2(SLICE, $2, $4); }
      |	'[' INTERM ']' { $$ = node1(SLICEI, $2); }
 
-
 CTERM:	CTERM '+' CTERM { $$ = node2(CADD, $1, $3); }
      |	CTERM '-' CTERM { $$ = node2(CMNS, $1, $3); }
      |	CTERM '*' CTERM { $$ = node2(CMUL, $1, $3); }
      | 	CTERM '/' CTERM { $$ = node2(CDIV, $1, $3); }
      // coniugate :) ?
      // comparisons :) ?
+     |  CLTERM '.' INTERM { $$=node2(CSLICEI, $1, $3); }
      | 	CNUM
 
 CNUM:	FNTERM imgr '+' FNTERM { $$ = node2(CNUMADD, $1, $4); }
@@ -313,6 +325,7 @@ INTERM: INTERM '-' INTERM { $$=node2(IMNS, $1, $3); }
       | INTERM grte INTERM { $$=node2(INGRTE, $1, $3); }
       |	INTERM '^' INTERM { $$=node2(IPOW, $1, $3); }
       |	'(' INTERM ')' { $$ = $2; }
+      | ILTERM '.' INTERM { $$=node2(ISLICEI, $1, $3); }
       | INUM 
 INUM: INT | INTVAR | IFC //d
 
@@ -330,6 +343,7 @@ FNTERM: FNTERM '-' FNTERM { $$=node2(FMNS, $1, $3); }
       | FNTERM grte FNTERM { $$=node2(FNGRTE, $1, $3); }
       |	FNTERM '^' FNTERM { $$=node2(FPOW, $1, $3); } 
       |	'(' FNTERM ')' { $$ = $2; }
+      | FLTERM '.' INTERM { $$=node2(FSLICEI, $1, $3); }
       | FNUM
 FNUM: FLOAT | FLOATVAR | FFC //d
 

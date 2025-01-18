@@ -154,11 +154,30 @@ void free_fcall_stack(FCallStack *stack) {
     free(stack);
 }
 
+void set_return_state(ExecutionContext *context, void *return_value) {
+    context->return_state->is_returning = true;
+    context->return_state->return_value = return_value;
+}
+
+bool is_returning(ExecutionContext *context) {
+    return context->return_state->is_returning;
+}
+
+void *get_return_value(ExecutionContext *context) {
+    return context->return_state->return_value;
+}
+
+void reset_return_state(ExecutionContext *context) {
+    context->return_state->is_returning = false;
+    context->return_state->return_value = NULL;
+}
+
 ExecutionContext *create_execution_context() {
     ExecutionContext *context = malloc(sizeof(ExecutionContext));
     context->variable_stack = create_variable_stack();
     context->function_map = create_function_map();
     context->call_stack = create_fcall_stack(FCALL_STACK_SIZE);
+    context->return_state = calloc(1, sizeof(ReturnState));
     return context;
 }
 

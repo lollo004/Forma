@@ -66,10 +66,39 @@ void *alloc_t(void *src, size_t size){
 
 ex_t ex(ast_t *t, ExecutionContext *e) {
 	ex_t ret = {.val.integer = 0};
-	if(!t) return ret;
+	if(!t || is_returning(e)) return ret;
 	switch (t->type) {
 		case STMTS:
 			return ex(t->c[0],e), ex(t->c[1],e);
+
+		case IRET:
+			ret.val.integer = ex(t->c[0],e).val.integer;
+    			set_return_state(e, alloc_t(&ret.val.integer, sizeof(int)));	
+			return ret;
+		case FRET:
+			ret.val.real = ex(t->c[0],e).val.real;
+    			set_return_state(e, alloc_t(&ret.val.real, sizeof(double)));	
+			return ret;
+		case CRET:
+			ret.val.cmpx = ex(t->c[0],e).val.cmpx;
+    			set_return_state(e, alloc_t(&ret.val.cmpx, sizeof(_Complex)));	
+			return ret;
+		case SRET:
+    			set_return_state(e, ex(t->c[0],e).val.str);	
+			return ret;
+		case ILRET:
+    			set_return_state(e, ex(t->c[0],e).val.ilist);	
+			return ret;
+		case FLRET:
+    			set_return_state(e, ex(t->c[0],e).val.flist);	
+			return ret;
+		case CLRET:
+    			set_return_state(e, ex(t->c[0],e).val.clist);	
+			return ret;
+		case SLRET:
+    			set_return_state(e, ex(t->c[0],e).val.slist);	
+			return ret;
+	
 		case INEQ:
 			if(ex(t->c[0],e).val.integer==ex(t->c[1],e).val.integer) ret.val.integer++; 
 			return ret; 
@@ -138,14 +167,14 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			return ret;
 
 		case IWRITE:
-			printf("%d\n", ex(t->c[0],e).val.integer); return ret;
+			printf("%d", ex(t->c[0],e).val.integer); return ret;
 		case FWRITE:
-			printf("%lf\n", ex(t->c[0],e).val.real); return ret;
+			printf("%lf", ex(t->c[0],e).val.real); return ret;
 		case CWRITE:
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx;
-			printf("%.2lf %.2lfi\n", creal(ret.val.cmpx), cimag(ret.val.cmpx)); return ret;
+			printf("%.2lf %.2lfi", creal(ret.val.cmpx), cimag(ret.val.cmpx)); return ret;
 		case SWRITE:
-			printf("%s\n", ex(t->c[0],e).val.str); return ret;
+			printf("%s", ex(t->c[0],e).val.str); return ret;
 
 		case IREAD:
 			scanf("%d", &ret.val.integer); //printf("\n");
@@ -180,50 +209,66 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 		case SLFC:
 			ex(t->c[0],e);
 			push_scope(e->variable_stack);
-			ret.val.slist=ex(function_map_get(e->function_map, t->val.id),e).val.slist;
+			ex(function_map_get(e->function_map, t->val.id),e);
 			pop_scope(e->variable_stack); 
+			ret.val.slist = get_return_value(e);
+			reset_return_state(e);
 			return ret;		
 		case CLFC:
 			ex(t->c[0],e);
 			push_scope(e->variable_stack);
-			ret.val.clist=ex(function_map_get(e->function_map, t->val.id),e).val.clist;
+			ex(function_map_get(e->function_map, t->val.id),e);
 			pop_scope(e->variable_stack); 
+			ret.val.clist = get_return_value(e);
+			reset_return_state(e);
 			return ret;
 		case FLFC:
     			ex(t->c[0],e);
 			push_scope(e->variable_stack);
-			ret.val.flist=ex(function_map_get(e->function_map, t->val.id),e).val.flist;
+			ex(function_map_get(e->function_map, t->val.id),e);
 			pop_scope(e->variable_stack); 
+			ret.val.flist = get_return_value(e);
+			reset_return_state(e);
 			return ret;
 		case ILFC:
     			ex(t->c[0],e);
 			push_scope(e->variable_stack);
-			ret.val.ilist=ex(function_map_get(e->function_map, t->val.id),e).val.ilist;
+			ex(function_map_get(e->function_map, t->val.id),e);
 			pop_scope(e->variable_stack); 
+			ret.val.ilist = get_return_value(e);
+			reset_return_state(e);
 			return ret;
 		case SFC:
 			ex(t->c[0],e);
 			push_scope(e->variable_stack);
-			ret.val.str=ex(function_map_get(e->function_map, t->val.id),e).val.str;
-			pop_scope(e->variable_stack); 
+			ex(function_map_get(e->function_map, t->val.id),e);
+			pop_scope(e->variable_stack);
+			ret.val.str = (char *)get_return_value(e);
+			reset_return_state(e);
 			return ret;
 		case CFC:
     			ex(t->c[0],e);
 			push_scope(e->variable_stack);
-			ret.val.cmpx=ex(function_map_get(e->function_map, t->val.id),e).val.cmpx;
+			ex(function_map_get(e->function_map, t->val.id),e);
 			pop_scope(e->variable_stack); 
+			ret.val.cmpx = *(_Complex *)get_return_value(e);
+			reset_return_state(e);
 			return ret;
 		case FFC:
 			ex(t->c[0],e);
 			push_scope(e->variable_stack);
-			ret.val.real=ex(function_map_get(e->function_map, t->val.id),e).val.real;
+			ex(function_map_get(e->function_map, t->val.id),e);
 			pop_scope(e->variable_stack); 
+			ret.val.real = *(double *)get_return_value(e);
+			reset_return_state(e);
 			return ret;
 		case IFC:
 			ex(t->c[0],e);
 			push_scope(e->variable_stack);
-			ret.val.integer=ex(function_map_get(e->function_map, t->val.id),e).val.integer;
-			pop_scope(e->variable_stack); 
+			ex(function_map_get(e->function_map, t->val.id),e);
+			pop_scope(e->variable_stack);
+			ret.val.integer = *(int *)get_return_value(e);
+			reset_return_state(e);
 			return ret;
 		case FARGS:
 			ex(t->c[0],e), ex(t->c[1],e);
@@ -285,11 +330,6 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 		case RVDEC:
 			variable_stack_insert(e->variable_stack, t->val.id, ex(t->c[0],e).val.any, false); return ret;
 
-		case ELIST:
-			return ret;
-			// AFTER left RECURSION SOLUTION	
-		
-
 		case ILADD: // this is append in reality
 			ret.val.ilist = int_list_cloneappend(ex(t->c[0],e).val.ilist, ex(t->c[1],e).val.ilist); return ret;	
 		case ILSLICE:
@@ -350,15 +390,55 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			strcat(ret.val.str, p1);	
 			strcat(ret.val.str+strlen(p1), p2);
 			return ret;
-		case SSLICE:
+		/*case SSLICE:
 			char *p=ex(t->c[0],e).val.str; slice_t s=ex(t->c[1],e).val.slice;
 			if(s.b == -1) s.b = strlen(p)-1;	
 			else if(strlen(p) <= s.b) { printf("String index outbound: %d\n", t->type); break; }
-			ret.val.str = calloc(s.b-s.a+1, sizeof(char));
-			memcpy(ret.val.str, p+s.a, s.b-s.a);
-		case SLICEI:
-			ret.val.slice.a=ret.val.slice.b=ex(t->c[0],e).val.integer; 
+			ret.val.str = calloc(s.b-s.a+2, sizeof(char));
+			memcpy(ret.val.str, p+(s.a), (s.b-s.a) * sizeof(char));
 			return ret;
+		*/
+case SSLICE: {
+    char *p = ex(t->c[0], e).val.str;
+    if (!p) {
+        printf("Null string pointer encountered.\n");
+        break;
+    }
+
+    slice_t s = ex(t->c[1], e).val.slice;
+    size_t len = strlen(p);
+
+    // Se s.b è -1, assegnalo all'ultimo indice della stringa
+    if (s.b == -1) s.b = len - 1;
+
+    // Se s.a è fuori dai limiti, impostalo al limite massimo valido
+    if (s.a < 0) s.a = 0;
+    if (s.a > len) s.a = len;
+
+    // Se s.b è fuori dai limiti, impostalo al limite massimo valido
+    if (s.b < 0) s.b = 0;
+    if (s.b > len) s.b = len;
+
+    // Se s.b < s.a, restituisci una stringa vuota
+    if (s.b < s.a) {
+        ret.val.str = calloc(1, sizeof(char)); // Stringa vuota terminata
+        return ret;
+    }
+
+    // Calcola la lunghezza dello slice e alloca memoria
+    size_t slice_len = s.b - s.a + 1;
+    ret.val.str = calloc(slice_len + 1, sizeof(char)); // +1 per il terminatore nullo
+    if (!ret.val.str) {
+        printf("Memory allocation failed.\n");
+        break;
+    }
+
+    // Copia i caratteri dello slice nella nuova stringa
+    memcpy(ret.val.str, p + s.a, slice_len);
+    ret.val.str[slice_len] = '\0'; // Aggiungi il terminatore nullo
+    return ret;
+}
+
 		case SLICE:
 			ret.val.slice.a=ex(t->c[0],e).val.integer; ret.val.slice.b=ex(t->c[1],e).val.integer; 
 			return ret;
@@ -368,7 +448,22 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 		case SLICEL:
 			ret.val.slice.a=0;ret.val.slice.b=ex(t->c[0],e).val.integer; 
 			return ret;
-			
+		case SLICEI:
+			ret.val.slice.a=ret.val.slice.b=ex(t->c[0],e).val.integer;
+			return ret;
+	
+		case ISLICEI:
+			ret.val.integer = *(int *)int_list_get_reference(ex(t->c[0],e).val.ilist, ex(t->c[1],e).val.integer);
+			return ret;
+		case FSLICEI:
+			ret.val.real = *(double *)double_list_get_reference(ex(t->c[0],e).val.flist, ex(t->c[1],e).val.integer);
+			return ret;
+		case CSLICEI:
+			ret.val.cmpx = *(_Complex *)complex_list_get_reference(ex(t->c[0],e).val.clist, ex(t->c[1],e).val.integer);
+			return ret;
+		case SSLICEI:
+			ret.val.str = (char *)string_list_get_copy(ex(t->c[0],e).val.slist, ex(t->c[1],e).val.integer);
+			return ret;		
 					
 		case CADD: 
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx+ex(t->c[1],e).val.cmpx; return ret;

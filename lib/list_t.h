@@ -102,5 +102,10 @@ DoubleLinkedList *double_list_cloneslice(DoubleLinkedList *list, int a, int b);
 StringLinkedList *string_list_cloneslice(StringLinkedList *list, int a, int b);
 ComplexLinkedList *complex_list_cloneslice(ComplexLinkedList *list, int a, int b);
 
+int *int_list_get_reference(IntLinkedList *list, size_t index);
+double *double_list_get_reference(DoubleLinkedList *list, size_t index);
+char *string_list_get_copy(StringLinkedList *list, size_t index);
+double _Complex *complex_list_get_reference(ComplexLinkedList *list, size_t index);
+
 #endif // LINKED_LIST_LIBRARY_H
 

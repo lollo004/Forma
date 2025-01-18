@@ -1,0 +1,9 @@
+let list: S[] = ["Hello", "World!"];
+
+let str: S = "Hello World!";
+
+write "First char: " + str[0] + "\n";
+
+write "Slice of string: " + str[12:] + "\n";
+
+write "First list elem: " + list.0 + "\n";

@@ -38,7 +38,7 @@ typedef struct VariableMap {
 // Scope for variables
 typedef struct VariableScope {
     VariableMap *variables;
-    struct VariableScope *next;
+    struct VariableScope *next; 
 } VariableScope;
 
 // Stack for variable scopes
@@ -82,11 +82,22 @@ void fcall_stack_push(FCallStack *stack, void *value);
 void *fcall_stack_pop(FCallStack *stack);
 void free_fcall_stack(FCallStack *stack);
 
+typedef struct ReturnState {
+    bool is_returning;
+    void *return_value;
+} ReturnState;
+
 typedef struct ExecutionContext {
     VariableStack *variable_stack;
     FunctionMap *function_map;
     FCallStack *call_stack;
+    ReturnState *return_state;
 } ExecutionContext;
+
+void set_return_state(ExecutionContext *context, void *return_value);
+bool is_returning(ExecutionContext *context);
+void *get_return_value(ExecutionContext *context);
+void reset_return_state(ExecutionContext *context);
 
 ExecutionContext *create_execution_context();
 

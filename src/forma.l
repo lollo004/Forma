@@ -14,7 +14,6 @@ extern StaticScopeStack *_staticstack;
 %x STRING_MODE COMMENT_MODE
 
 /* Token Regex */
-HEADER			"#Forma"
 INTEGER      		[0-9]+
 FLOATING        	[0-9]+\.[0-9]+
 EQ			==
@@ -42,19 +41,20 @@ DEF			def
 IMGR			I
 SET			N|Z|R|C|S
 ID           		[A-Za-z_][A-Za-z0-9_]*
-NEWLINE              	\n
+NL			\n
+NEWLINE              	\\n
+ANY_STR			[^\n^\t]{1}
 ANY_CHARACTER        	[^ ^\n^\t]{1}
 
 %option noyywrap noinput nounput yylineno
 %%
 
-{NEWLINE} { /* For yylineno debug */ }
+{NL} { /* For yylineno debug */ }
 {IL}	{ return _il; }
 {FL}	{ return _fl; }
 {CL}	{ return _cl; }
 {SL}	{ return _sl; }
 
-{HEADER}	{ return _header; }
 {IF} 	{ return _if; }
 {ELSE} 	{ return _else; }
 {RETURN}	{ return _return; }
@@ -177,10 +177,12 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
     	return str;
 }
 <STRING_MODE>{NEWLINE} {
+	char *_s = strdup("\n");
     	yylval.str = realloc(yylval.str, strlen(yylval.str) + 2);
-    	strcat(yylval.str, yytext);
+    	strcat(yylval.str, _s);
+	free(_s);
 }
-<STRING_MODE>{ANY_CHARACTER} {
+<STRING_MODE>{ANY_STR} {
     	yylval.str = realloc(yylval.str, strlen(yylval.str) + 2);
     	strncat(yylval.str, yytext, 1);
 }
