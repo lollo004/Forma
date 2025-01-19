@@ -27,7 +27,7 @@ computer_choise: S[] * S[] * S * N => N;
 def computer_choise(rules, moves, player, streak) {
 	?
 	return random(0, len(moves)), if streak < 2;
-	write "\( * _ * )/\n", return cheat_move(rules, player, streak), else	
+	write "\( * _ * )/  *(cheating..)\n", return cheat_move(rules, player, 0), else	
 	?;	
 };
 

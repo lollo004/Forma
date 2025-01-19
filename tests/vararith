@@ -1,4 +1,0 @@
-let a:N=2;
-let b:N=3;
-
-let c:N=a+b;

@@ -52,6 +52,7 @@ int exec_env(ast_t *t) {
 	ExecutionContext *context = create_execution_context();
 	push_scope(context->variable_stack);	
 	optimize(t);
+	printf("\r");
 	ex(t, context);	
 	pop_scope(context->variable_stack);
 	free_execution_context(context);
@@ -181,7 +182,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			printf("%s", ex(t->c[0],e).val.str); return ret;
 
 		case IREAD:
-			scanf("%d", &ret.val.integer); //printf("\n");
+			scanf("%d", &ret.val.integer); 
 			ret.val.any = alloc_t(&ret.val.integer, sizeof(int));
 			return ret;
 		case FREAD:
@@ -190,8 +191,10 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			return ret;
 		case SREAD:
 			char _s[255] = {0};
-			scanf("%s", _s);
-			ret.val.any = strdup(_s);	
+			if (fgets(_s, sizeof(_s), stdin) != NULL) {
+				_s[strcspn(_s, "\n")] = '\0';
+				ret.val.any = strdup(_s);
+			} else ret.val.any = strdup("");
 			return ret;
 		case IF:
 			if(ex(t->c[1],e).val.integer) ex(t->c[0],e);

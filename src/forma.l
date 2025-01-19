@@ -44,12 +44,14 @@ SET			N|Z|R|C|S
 ID           		[A-Za-z_][A-Za-z0-9_]*
 NL			\n
 NEWLINE              	\\n
+SPACE			" "
 ANY_STR			[^\n^\t]{1}
 ANY_CHARACTER        	[^ ^\n^\t]{1}
 
 %option noyywrap noinput nounput yylineno
 %%
 
+{SPACE}	{ }
 {NL} { /* For yylineno debug */ }
 {IL}	{ return _il; }
 {FL}	{ return _fl; }
