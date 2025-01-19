@@ -1,4 +1,4 @@
-# Formula
+# Formula 🏎️🔧👨‍🔧
 Formula is a functional programming language written for Compiler Construction exam project.
 
 ## Charateristics:
