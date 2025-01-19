@@ -71,6 +71,10 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 		case STMTS:
 			return ex(t->c[0],e), ex(t->c[1],e);
 
+		case RANDOM:
+			ret.val.integer = ex(t->c[0],e).val.integer + rand() % ex(t->c[1],e).val.integer;
+			return ret;
+	
 		case IRET:
 			ret.val.integer = ex(t->c[0],e).val.integer;
     			set_return_state(e, alloc_t(&ret.val.integer, sizeof(int)));	
@@ -186,7 +190,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			return ret;
 		case SREAD:
 			char _s[255] = {0};
-			scanf("%255[^\n]", _s);
+			scanf("%s", _s);
 			ret.val.any = strdup(_s);	
 			return ret;
 		case IF:
@@ -364,13 +368,18 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			t->c[0]->val.clist = ret.val.clist; ex(t->c[0],e); 
 			return ret;
 		case SLISTE:
-			ret.val.slist = create_string_list();
+			ret.val.any = create_string_list();
 			if(!t->c[0]) return ret;
-			t->c[0]->val.slist = ret.val.slist; ex(t->c[0],e); 
+			t->c[0]->val.any = ret.val.any; 
+			ex(t->c[0],e);
+			void *_t = ret.val.any;
+			ret.val.slist = _t;
 			return ret;
 		case LISTS:
 			t->c[0]->val.any = t->val.any; t->c[1]->val.any = t->val.any;
-			ex(t->c[0],e), ex(t->c[1],e);
+			ex(t->c[0],e); 
+			ex(t->c[1],e);
+			return ret;
 		case ILIST:
 			int_list_add(t->val.any, ex(t->c[0],e).val.integer);
 			return ret;
@@ -438,7 +447,6 @@ case SSLICE: {
     ret.val.str[slice_len] = '\0'; // Aggiungi il terminatore nullo
     return ret;
 }
-
 		case SLICE:
 			ret.val.slice.a=ex(t->c[0],e).val.integer; ret.val.slice.b=ex(t->c[1],e).val.integer; 
 			return ret;

@@ -310,31 +310,26 @@ IntLinkedList *int_list_cloneappend(IntLinkedList *list1, IntLinkedList *list2) 
 
 IntLinkedList *int_list_cloneslice(IntLinkedList *list, int a, int b) {
     IntLinkedList *new_list = create_int_list();
+
+    if (a >= list->size) {
+        return new_list; // Return empty list if 'a' is out of bounds
+    }
+
+    if (b == -1) {
+        b = list->size; // Set 'b' to the size of the list if it's -1
+    }
+
     IntListNode *current = list->head;
     int index = 0;
 
     while (current) {
-        if (index >= a && (b == -1 || index < b)) {
+        if (index >= a && index < b) {
             int_list_add(new_list, current->value);
         }
         current = current->next;
         index++;
     }
 
-    return new_list;
-}
-
-// Clone add and clone append functions for double linked list
-DoubleLinkedList *double_list_cloneadd(DoubleLinkedList *list, double value) {
-    DoubleLinkedList *new_list = create_double_list();
-    DoubleListNode *current = list->head;
-
-    while (current) {
-        double_list_add(new_list, current->value);
-        current = current->next;
-    }
-
-    double_list_add(new_list, value);
     return new_list;
 }
 
@@ -358,11 +353,20 @@ DoubleLinkedList *double_list_cloneappend(DoubleLinkedList *list1, DoubleLinkedL
 
 DoubleLinkedList *double_list_cloneslice(DoubleLinkedList *list, int a, int b) {
     DoubleLinkedList *new_list = create_double_list();
+
+    if (a >= list->size) {
+        return new_list; // Return empty list if 'a' is out of bounds
+    }
+
+    if (b == -1) {
+        b = list->size; // Set 'b' to the size of the list if it's -1
+    }
+
     DoubleListNode *current = list->head;
     int index = 0;
 
     while (current) {
-        if (index >= a && (b == -1 || index < b)) {
+        if (index >= a && index < b) {
             double_list_add(new_list, current->value);
         }
         current = current->next;
@@ -406,11 +410,20 @@ StringLinkedList *string_list_cloneappend(StringLinkedList *list1, StringLinkedL
 
 StringLinkedList *string_list_cloneslice(StringLinkedList *list, int a, int b) {
     StringLinkedList *new_list = create_string_list();
+
+    if (a >= list->size) {
+        return new_list; // Return empty list if 'a' is out of bounds
+    }
+
+    if (b == -1) {
+        b = list->size; // Set 'b' to the size of the list if it's -1
+    }
+
     StringListNode *current = list->head;
     int index = 0;
 
     while (current) {
-        if (index >= a && (b == -1 || index < b)) {
+        if (index >= a && index < b) {
             string_list_add(new_list, current->value);
         }
         current = current->next;
@@ -454,11 +467,20 @@ ComplexLinkedList *complex_list_cloneappend(ComplexLinkedList *list1, ComplexLin
 
 ComplexLinkedList *complex_list_cloneslice(ComplexLinkedList *list, int a, int b) {
     ComplexLinkedList *new_list = create_complex_list();
+
+    if (a >= list->size) {
+        return new_list; // Return empty list if 'a' is out of bounds
+    }
+
+    if (b == -1) {
+        b = list->size; // Set 'b' to the size of the list if it's -1
+    }
+
     ComplexListNode *current = list->head;
     int index = 0;
 
     while (current) {
-        if (index >= a && (b == -1 || index < b)) {
+        if (index >= a && index < b) {
             complex_list_add(new_list, current->value);
         }
         current = current->next;

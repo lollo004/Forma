@@ -1,9 +1,13 @@
-let list: S[] = ["Hello", "World!"];
+let moves: S[] = ["hi", "there"];
 
-let str: S = "Hello World!";
+let shifted: S[] = moves[1:];
+write "trying to write\n";
+write shifted.0 + "\n";
 
-write "First char: " + str[0] + "\n";
+let n: N = read;
 
-write "Slice of string: " + str[12:] + "\n";
+write n;
 
-write "First list elem: " + list.0 + "\n";
+let n2: R = read;
+
+write n2;

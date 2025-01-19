@@ -37,7 +37,7 @@ static int ASTDEBUG=1;
 
 %define parse.error detailed
 
-%token <ast> _if _else _return _header _il _fl _cl _sl
+%token <ast> _if _else _return _header _il _fl _cl _sl _random
 %token let def arrow _read _write eq neq mine grte <ch> set
 %token <integer> integer <real> real <str> str imgr 
 %token <id> int_var float_var str_var cmpx_var intlist_var floatlist_var strlist_var cmpxlist_var int_fun float_fun str_fun cmpx_fun intlist_fun floatlist_fun strlist_fun cmpxlist_fun new_id
@@ -223,26 +223,18 @@ TERM:	INTERM
 
 // ---- LIST TERM
 ILTERM:	ILTERM '+' ILTERM { $$ = node2(ILADD, $1, $3); }
-     |  ILTERM eq ILTERM { $$ = node2(ILEQ, $1, $3); }
-     |	ILTERM neq ILTERM { $$ = node2(ILNEQ, $1, $3); }
      |	ILIST SLICE { $$ = node2(ILSLICE, $1, $2); }
      |	ILIST //d
 
 FLTERM:	FLTERM '+' FLTERM { $$ = node2(FLADD, $1, $3); }
-     |  FLTERM eq FLTERM { $$ = node2(FLEQ, $1, $3); }
-     |	FLTERM neq FLTERM { $$ = node2(FLNEQ, $1, $3); }
      |	FLIST SLICE { $$ = node2(FLSLICE, $1, $2); }
      |	FLIST //d
 
 CLTERM:	CLTERM '+' CLTERM { $$ = node2(CLADD, $1, $3); }
-     |  CLTERM eq CLTERM { $$ = node2(CLEQ, $1, $3); }
-     |	CLTERM neq CLTERM { $$ = node2(CLNEQ, $1, $3); }
      |	CLIST SLICE { $$ = node2(CLSLICE, $1, $2); }
      |	CLIST //d
 
 SLTERM:	SLTERM '+' SLTERM { $$ = node2(SLADD, $1, $3); }
-     |  SLTERM eq SLTERM { $$ = node2(SLEQ, $1, $3); }
-     |	SLTERM neq SLTERM { $$ = node2(SLNEQ, $1, $3); }
      |	SLIST SLICE { $$ = node2(SLSLICE, $1, $2); }
      |	SLIST //d
 
@@ -283,8 +275,6 @@ SARGS:	SARGS ',' SARGS { $$ = node2(LISTS, $1, $3); }
 
 // ---- STRING TERM
 STERM:	STERM '+' STERM { $$ = node2(SADD, $1, $3); }
-     |  STERM eq STERM { $$ = node2(SEQ, $1, $3); }
-     |  STERM neq STERM { $$ = node2(SNEQ, $1, $3); }
      |  STRING SLICE { $$ = node2(SSLICE, $1, $2); } 
      |  SLTERM '.' INTERM { $$=node2(SSLICEI, $1, $3); }
      |	STRING //d
@@ -311,23 +301,6 @@ CNUM:	FNTERM imgr '+' FNTERM { $$ = node2(CNUMADD, $1, $4); }
     |	CMPXVAR
     |	CFC
 
-INTERM: INTERM '-' INTERM { $$=node2(IMNS, $1, $3); }
-      |	'-' INTERM { ast_t *t = node0(Integer); t->val.integer=0; $$ = node2(FMNS, t, $2); }
-      |	'+' INTERM { $$ = $2; }
-      | INTERM '+' INTERM { $$=node2(IADD, $1, $3); }
-      |	INTERM '*' INTERM { $$=node2(IMUL, $1, $3); }
-      | INTERM '/' INTERM { $$=node2(IDIV, $1, $3); }
-      | INTERM eq INTERM { $$=node2(INEQ, $1, $3); }
-      | INTERM neq INTERM { $$=node2(INNEQ, $1, $3); }
-      | INTERM '>' INTERM { $$=node2(INGRT, $1, $3); }
-      | INTERM '<' INTERM { $$=node2(INMIN, $1, $3); }
-      | INTERM mine INTERM { $$=node2(INMINE, $1, $3); }
-      | INTERM grte INTERM { $$=node2(INGRTE, $1, $3); }
-      |	INTERM '^' INTERM { $$=node2(IPOW, $1, $3); }
-      |	'(' INTERM ')' { $$ = $2; }
-      | ILTERM '.' INTERM { $$=node2(ISLICEI, $1, $3); }
-      | INUM 
-INUM: INT | INTVAR | IFC //d
 
 FNTERM: FNTERM '-' FNTERM { $$=node2(FMNS, $1, $3); }
       |	'-' FNTERM { ast_t *t = node0(real); t->val.real=0; $$ = node2(FMNS, t, $2); }
@@ -335,17 +308,49 @@ FNTERM: FNTERM '-' FNTERM { $$=node2(FMNS, $1, $3); }
       | FNTERM '+' FNTERM { $$=node2(FADD, $1, $3); }
       |	FNTERM '*' FNTERM { $$=node2(FMUL, $1, $3); }
       | FNTERM '/' FNTERM { $$=node2(FDIV, $1, $3); }
+      |	FNTERM '^' FNTERM { $$=node2(FPOW, $1, $3); } 
+      |	'(' FNTERM ')' { $$ = $2; }
+      | FLTERM '.' INTERM { $$=node2(FSLICEI, $1, $3); }
+      | FNUM
+FNUM: FLOAT | FLOATVAR | FFC //d
+
+INTERM: INTERM '-' INTERM { $$=node2(IMNS, $1, $3); }
+      |	'-' INTERM { ast_t *t = node0(Integer); t->val.integer=0; $$ = node2(FMNS, t, $2); }
+      |	'+' INTERM { $$ = $2; }
+      | INTERM '+' INTERM { $$=node2(IADD, $1, $3); }
+      |	INTERM '*' INTERM { $$=node2(IMUL, $1, $3); }
+      | INTERM '/' INTERM { $$=node2(IDIV, $1, $3); }
+      |	INTERM '^' INTERM { $$=node2(IPOW, $1, $3); }
+      |	'(' INTERM ')' { $$ = $2; }
+      | ILTERM '.' INTERM { $$=node2(ISLICEI, $1, $3); }
+      |	_random '(' INTERM ',' INTERM ')' { $$=node2(RANDOM, $3, $5); }
+      | INUM
+
+INUM: INT 
+    | INTVAR 
+    | IFC 
+     |  ILTERM eq ILTERM { $$ = node2(ILEQ, $1, $3); }
+     |	ILTERM neq ILTERM { $$ = node2(ILNEQ, $1, $3); }
+     |  FLTERM eq FLTERM { $$ = node2(FLEQ, $1, $3); }
+     |	FLTERM neq FLTERM { $$ = node2(FLNEQ, $1, $3); }
+     |  CLTERM eq CLTERM { $$ = node2(CLEQ, $1, $3); }
+     |	CLTERM neq CLTERM { $$ = node2(CLNEQ, $1, $3); }
+     |  SLTERM eq SLTERM { $$ = node2(SLEQ, $1, $3); }
+     |	SLTERM neq SLTERM { $$ = node2(SLNEQ, $1, $3); }
+     |  STERM eq STERM { $$ = node2(SEQ, $1, $3); }
+     |  STERM neq STERM { $$ = node2(SNEQ, $1, $3); }
       | FNTERM eq FNTERM { $$=node2(FNEQ, $1, $3); }
       | FNTERM neq FNTERM { $$=node2(FNNEQ, $1, $3); }
       | FNTERM '>' FNTERM { $$=node2(FNGRT, $1, $3); }
       | FNTERM '<' FNTERM { $$=node2(FNMIN, $1, $3); }
       | FNTERM mine FNTERM { $$=node2(FNMINE, $1, $3); }
       | FNTERM grte FNTERM { $$=node2(FNGRTE, $1, $3); }
-      |	FNTERM '^' FNTERM { $$=node2(FPOW, $1, $3); } 
-      |	'(' FNTERM ')' { $$ = $2; }
-      | FLTERM '.' INTERM { $$=node2(FSLICEI, $1, $3); }
-      | FNUM
-FNUM: FLOAT | FLOATVAR | FFC //d
+      | INTERM eq INTERM { $$=node2(INEQ, $1, $3); }
+      | INTERM neq INTERM { $$=node2(INNEQ, $1, $3); }
+      | INTERM '>' INTERM { $$=node2(INGRT, $1, $3); }
+      | INTERM '<' INTERM { $$=node2(INMIN, $1, $3); }
+      | INTERM mine INTERM { $$=node2(INMINE, $1, $3); }
+      | INTERM grte INTERM { $$=node2(INGRTE, $1, $3); }
 
 /* VALUE TOKENS */
 INT:		integer { $$ = node0(Integer); $$->val.integer = $1; }

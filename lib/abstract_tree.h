@@ -6,6 +6,7 @@
 #include <memory.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 #include <list_t.h>
 #include <stack_t.h>
@@ -39,6 +40,8 @@ enum {	STMTS = 1000,
 	IRET=4000, FRET=4001, CRET=4002, SRET=4003, ILRET=4004, FLRET=4005, CLRET=4006, SLRET=4007,
 	ISLICEI=4100, FSLICEI=4101, CSLICEI=4102, SSLICEI=4103,
 	
+	RANDOM=4200,
+		
  	Integer=2000,Real=2001,Str=2002,
 	Int_var=2100,Float_var=2101,Str_var=2102,Cmpx_var=2103,
 	Intlist_var=2110, Floatlist_var=2111,Strlist_var=2112,Cmpxlist_var=2113,

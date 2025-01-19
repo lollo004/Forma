@@ -36,6 +36,7 @@ ELSE         		else
 RETURN			return
 READ			read
 WRITE			write
+RANDOM			random
 LET			let
 DEF			def
 IMGR			I
@@ -54,7 +55,7 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 {FL}	{ return _fl; }
 {CL}	{ return _cl; }
 {SL}	{ return _sl; }
-
+{RANDOM} { return _random; }
 {IF} 	{ return _if; }
 {ELSE} 	{ return _else; }
 {RETURN}	{ return _return; }
@@ -157,7 +158,7 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 {COMMENT} {
     BEGIN(COMMENT_MODE);
 }
-<COMMENT_MODE>{NEWLINE} {
+<COMMENT_MODE>{NL} {
     BEGIN(INITIAL); // Exit COMMENT_MODE on newline
 }
 <COMMENT_MODE>{ANY_CHARACTER} {
@@ -177,10 +178,8 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
     	return str;
 }
 <STRING_MODE>{NEWLINE} {
-	char *_s = strdup("\n");
     	yylval.str = realloc(yylval.str, strlen(yylval.str) + 2);
-    	strcat(yylval.str, _s);
-	free(_s);
+    	strcat(yylval.str, "\n");
 }
 <STRING_MODE>{ANY_STR} {
     	yylval.str = realloc(yylval.str, strlen(yylval.str) + 2);
