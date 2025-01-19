@@ -1,5 +1,5 @@
-# Forma
-Forma is a functional programming language written for Compiler Construction exam project.
+# Formula
+Formula is a functional programming language written for Compiler Construction exam project.
 
 ## Charateristics:
 - Paradigm: Tries to follow the a pure functional padarigm as much as possible.
