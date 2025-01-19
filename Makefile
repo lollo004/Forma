@@ -2,20 +2,19 @@
 CC=gcc
 CFLAGS=-O0 -Wall -ggdb -Ilib
 LDFLAGS=-lm
-PRJ=forma
+PRJ=formula
 SRC_DIR=src
 BUILD_DIR=build
-TEST_DIR=tests
 LIB_DIR=lib
 
 # File di sorgente
-FLEX_SRC=$(SRC_DIR)/forma.l
-BISON_SRC=$(SRC_DIR)/forma.y
+FLEX_SRC=$(SRC_DIR)/formula.l
+BISON_SRC=$(SRC_DIR)/formula.y
 
 # File di output generati da bison e flex
-TAB_C=$(BUILD_DIR)/forma.tab.c
-TAB_H=$(BUILD_DIR)/forma.tab.h
-LEX_C=$(BUILD_DIR)/forma.lex.c
+TAB_C=$(BUILD_DIR)/formula.tab.c
+TAB_H=$(BUILD_DIR)/formula.tab.h
+LEX_C=$(BUILD_DIR)/formula.lex.c
 
 # File nella directory lib
 LIB_SRC=$(wildcard $(LIB_DIR)/*.c)
@@ -33,7 +32,7 @@ $(BUILD_DIR)/%.o: $(LIB_DIR)/%.c
 # Regola per generare i file da bison
 $(TAB_C) $(TAB_H): $(BISON_SRC)
 	mkdir -p $(BUILD_DIR)
-	bison -v -t --defines --report=all -Wcounterexamples -o build/forma.tab.c src/forma.y
+	bison -v -t --defines --report=all -Wcounterexamples -o build/formula.tab.c src/formula.y
 
 # Regola per generare il file da flex
 $(LEX_C): $(FLEX_SRC) $(TAB_H)
@@ -42,10 +41,3 @@ $(LEX_C): $(FLEX_SRC) $(TAB_H)
 # Target per pulire i file generati
 clean:
 	rm -rf $(BUILD_DIR) $(PRJ)
-
-# Regola per eseguire il programma con tutti i file nella cartella tests
-run: $(PRJ)
-	for f in $(TEST_DIR)/*; do \
-		./$(PRJ) $$f; \
-	done
-

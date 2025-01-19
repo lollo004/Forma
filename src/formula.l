@@ -1,10 +1,12 @@
 %{
-#include "static_analysis.h"
-#include "forma.tab.h"
+#include "formula.tab.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+
+// user lib
+#include "static_analysis.h"
 
 void yyerror(const char *msg);
 extern StaticScopeStack *_staticstack;
