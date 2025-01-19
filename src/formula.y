@@ -62,6 +62,8 @@ S:	STMTS { ASTD printf("\n"); ASTD print_ast($1, 0, ""); exec_env($1); }
  ;
 STMTS:	STMTS STMT ';' { $$ = node2(STMTS, $1, $2);}
      |  STMTS SASTMT ';' {} // no action on SA
+     |  STMTS FBODY { $$ = node2(STMTS, $1, $2); }
+     |	STMTS ':' COND ';' { $$ = node2(STMTS, $1, $3); }
      |	%empty { $$ = NULL; }
      ;
 
@@ -72,9 +74,7 @@ STMT:	TERM //d
     |	_write FNTERM { $$ = node1(FWRITE, $2); }
     |	_write CTERM { $$ = node1(CWRITE, $2); }
     |	_write STERM { $$ = node1(SWRITE, $2); }
-    |	'?' COND '?' { $$ = $2; }
     |   VDEC //d
-    |   FBODY //d
     |	RETURN
 
 RETURN:	_return INTERM { $$ = node1(IRET, $2); }
@@ -87,8 +87,8 @@ RETURN:	_return INTERM { $$ = node1(IRET, $2); }
       |	_return SLTERM { $$ = node1(SLRET, $2); }
 
 COND:	CSTMTS _if TERM { $$ = node3(IF, $1, $3, NULL); }
-    |	CSTMTS _if TERM ';' CSTMTS _else { $$ = node3(IF, $1, $3, $5); }
-    |	CSTMTS _if TERM ';' COND { $$ = node3(IF, $1, $3, $5); }
+    |	CSTMTS _if TERM ',' CSTMTS _else { $$ = node3(IF, $1, $3, $5); }
+    |	CSTMTS _if TERM ',' COND { $$ = node3(IF, $1, $3, $5); }
 
 
 CSTMTS:	CSTMTS STMT ',' { $$ = node2(STMTS, $1, $2); }

@@ -1,84 +1,86 @@
 max: N * N => N;
 def max(a, b) {
-	?
-	return a, if a >= b;
+	:
+	return a, if a >= b,
 	return b, else
-	?;
-};
+	;
+}
 
 strlen: S => N;
 def strlen(str) {
-	?
-	return 0, if str == "";
+	:
+	return 0, if str == "",
 	return 1 + strlen(str[1:]), else
-	?;
-};
+	;
+}
 
 listlen: S[] => N;
 def listlen(list) {
-	?
-	return 0, if list == s[];
+	:
+	return 0, if list == s[],
 	return 1 + listlen(list[1:]), else
-	?;
-};
+	;
+}
 
 max_len: S[] * N => N;
 def max_len(list, index) {
-	?
+	:
 	return 0, if index >= listlen(list)
-	?;
+	;
 
 	let curr_len: N = strlen(list.index);
 
 	return max(curr_len, max_len(list, index+1));
-};
+}
 
 split: S * S => S[];
 def split(str, curr) {
-	?
-	return [curr], if str == "";
-	return [curr] + split(str[1:], ""), if str[0] == " ";
+	:
+	return [curr], if str == "",
+	return [curr] + split(str[1:], ""), if str[0] == " ",
 	return split(str[1:], curr + str[0]), else
-	?;
-};
+	;
+}
 
 str_n: S * N => S;
 def str_n(char, n) {
-	?
-	return "", if n == 0;
+	:
+	return "", if n == 0,
 	return char + str_n(char, n-1), else
-	?;
-};
+	;
+}
 
 frame_line: S * N => N;
 def frame_line(word, max_len) {
 	write "* " + word + str_n(" ", max_len - strlen(word))+ " *\n";
 	return 0;
-};
+}
 
 frame_lines: S[] * N => S[];
 def frame_lines(words, max_len) {
-	?
-	return 0, if words == s[];
+	:
+	return 0, if words == s[],
 	frame_line(words.0, max_len), return frame_lines(words[1:], max_len), else
-	?;
-};
+	;
+}
 
 frame_border: N => N;
 def frame_border(max_len) {
 	write str_n("*", max_len) + "\n";
 	return 0;
-};
+}
 
 frame: S => N;
 def frame(sentence) {
 	let words: S[] = split(sentence, "");
+	write "Words splitted\n";
 	let max_length: N = max_len(words, 0);
+	write "Found maximum word length: "; write max_length; write "\n";
 	frame_border(max_length + 4);
 	frame_lines(words, max_length);
 	frame_border(max_length + 4);	
 	return 0;
-};
+}
 
 write "Please input a sentence: ";
 let sentence: S = read;

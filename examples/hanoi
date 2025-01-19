@@ -4,15 +4,14 @@ hanoi: N * S * S * S => N;
 
 def hanoi(n, src, dst, aux) {
         % Recursive solution to the Tower of Hanoi problem.
-	?
-		write src + " -> " + dst + "\n", if n == 1;
-		hanoi(n - 1, src, aux, dst),
-        	write src + " -> " + dst + "\n",
-		hanoi(n - 1, aux, dst, src), 
-		else
-	?;
+	:
+	  write src + " -> " + dst + "\n", if n == 1,
+	  hanoi(n - 1, src, aux, dst), 
+	  write src + " -> " + dst + "\n", 
+	  hanoi(n - 1, aux, dst, src), else
+	;
 	return 0;
-};
+}
                           
 let origin: S = "Source";
 let destination: S = "Destination";

@@ -1,45 +1,45 @@
 % utils
 len: S => N;
 def len(str) {
-	?
-	return 0, if str == "";
+	:
+	return 0, if str == "",
 	return 1 + len(str[1:]), else
-	?;
-};
+	;
+}
 
 is_valid_move: S[] * S => N;
 def is_valid_move(moves, player) {
-	?
-	return 0, if moves == s[];
+	:
+	return 0, if moves == s[],
 	return (moves.0 == player) + is_valid_move(moves[1:], player), else
-	?;
-};
+	;
+}
 
 cheat_move: S[] * S * N => N;
 def cheat_move(rules, player, i) {
-	?
-	return i+1, if rules.0 == player;
+	:
+	return i+1, if rules.0 == player,
 	return cheat_move(rules[2:], player, i+2), else
-	?;
-};
+	;
+}
 
 computer_choise: S[] * S[] * S * N => N;
 def computer_choise(rules, moves, player, streak) {
-	?
-	return random(0, len(moves)), if streak < 2;
-	write "\( * _ * )/  *(cheating..)\n", return cheat_move(rules, player, 0), else	
-	?;	
-};
+	:
+	return random(0, len(moves)), if streak < 2,
+	write "\( * _ * )/\n", return cheat_move(rules, player, 0), else	
+	;	
+}
 
 win_evaluate: S[] * S * S => N;
 def win_evaluate(rules, player, computer) {
-	?
-	return 2, if player == computer;
-	return 0, if (rules.0 == player) * (rules.1 == computer);
-	return 1, if (rules.0 == computer) * (rules.1 == player);
+	:
+	return 2, if player == computer,
+	return 0, if (rules.0 == player) * (rules.1 == computer),
+	return 1, if (rules.0 == computer) * (rules.1 == player),
 	return win_evaluate(rules[2:], player, computer), else
-	?;
-}; 
+	;
+}
 
 game: S[] * S[] * N * N * N => N;
 def game(rules, moves, win, lose, streak) {
@@ -47,21 +47,21 @@ def game(rules, moves, win, lose, streak) {
 	write "Scoreboard: "; write win; write " - "; write lose; write "\n";
 	write "Make your choise: ";
 	let player: S = read;
-	?
-	0, if is_valid_move(moves, player);
+	:
+	0, if is_valid_move(moves, player),
 	write "Invalid move!\n", return game(rules, moves, win, lose, streak), else
-	?;
+	;
 		
 	let computer: S = moves.computer_choise(rules, moves, player, streak);
 	write "Computer plays.. "; write computer; write "!\n";
 	
 	let result: N = win_evaluate(rules, player, computer);
-	?
-	write "Draw!\n", return game(rules, moves, win, lose, streak), if result == 2;
-	write "Player wins!\n", return game(rules, moves, win+1, lose, streak+1), if result == 0;
+	:
+	write "Draw!\n", return game(rules, moves, win, lose, streak), if result == 2,
+	write "Player wins!\n", return game(rules, moves, win+1, lose, streak+1), if result == 0,
 	write "Computer wins!\n", return game(rules, moves, win, lose+1, 0), else
-	?;
-};
+	;
+}
 
 let rules: S[] = [
     	"rock", "scissors", "rock", "lizard",
