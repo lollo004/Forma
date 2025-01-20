@@ -1,0 +1,13 @@
+let string: S = "Ciao!";
+let var: S = "";
+write 2 == 2;
+write 2.0 == 3.3;
+write "Hey" == "Hey";
+write "Ciao bel" == "Ciao brut";
+write string == string;
+write string == var;
+
+:
+  write "Hello World!", if string == string,
+  write "Hello!", else
+;

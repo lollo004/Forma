@@ -46,13 +46,225 @@ void print_ast(ast_t *t, int deep, const char *prefix) {
     }
 }
 
-int optimize(ast_t *t) { return 0; }
+int optimize(ast_t *t) {
+	if(!t) return 0;
+	switch(t->type){
+		case IF:
+			if(t->c[1]->type != Integer) break;
+			ast_t *node;
+			if(t->c[1]->val.integer) {
+				node = t->c[0];
+				// clear all t->c[2] tree
+			}
+			else {
+				node = t->c[2];
+				// clear all t->c[0] tree
+ 			}
+ 			free(t->c[1]);
+			t->type = STMTS;
+			t->c[0] = node;
+			t->c[1] = NULL;
+			t->c[2] = NULL;
+			return 1;
+		
+		case SEQ:
+			if (t->c[0]->type == Str_var && t->c[1]->type == Str_var) {
+				if(strcmp(t->c[0]->val.id, t->c[1]->val.id)) break;
+				t->type = Integer;
+				t->val.integer = 1;
+				free(t->c[0]->val.id), free(t->c[1]->val.id);
+				free(t->c[0]), free(t->c[1]);
+				t->c[0] = t->c[1] = NULL;
+				return 1;
+			}
+			else if(t->c[0]->type != Str || t->c[1]->type != Str) break;
+			t->type = Integer;
+			t->val.integer = !strcmp(t->c[0]->val.str, t->c[1]->val.str);
+			free(t->c[0]->val.str), free(t->c[1]->val.str);
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1; 
+		case SNEQ: 
+			if (t->c[0]->type == Str_var && t->c[1]->type == Str_var) {
+				if(strcmp(t->c[0]->val.id, t->c[1]->val.id)) break;
+				t->type = Integer;
+				t->val.integer = 0;
+				free(t->c[0]->val.id), free(t->c[1]->val.id);
+				free(t->c[0]), free(t->c[1]);
+				t->c[0] = t->c[1] = NULL;
+				return 1;
+			}
+			else if(t->c[0]->type != Str || t->c[1]->type != Str) break;
+			t->type = Integer;
+			t->val.integer = strcmp(t->c[0]->val.str, t->c[1]->val.str);
+			free(t->c[0]->val.str), free(t->c[1]->val.str);
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1; 
+
+		case CEQ:
+			if (t->c[0]->type == Cmpx_var && t->c[1]->type == Cmpx_var) {
+				if(strcmp(t->c[0]->val.id, t->c[1]->val.id)) break;
+				t->type = Integer;
+				t->val.integer = 1;
+				free(t->c[0]->val.id), free(t->c[1]->val.id);
+				free(t->c[0]), free(t->c[1]);
+				t->c[0] = t->c[1] = NULL;
+				return 1;
+			}			
+		case CNEQ:
+			if (t->c[0]->type == Cmpx_var && t->c[1]->type == Cmpx_var) {
+				if(strcmp(t->c[0]->val.id, t->c[1]->val.id)) break;
+				t->type = Integer;
+				t->val.integer = 0;
+				free(t->c[0]->val.id), free(t->c[1]->val.id);
+				free(t->c[0]), free(t->c[1]);
+				t->c[0] = t->c[1] = NULL;
+				return 1;
+			}
+			
+		case FNEQ:
+			if (t->c[0]->type == Float_var && t->c[1]->type == Float_var) {
+				if(strcmp(t->c[0]->val.id, t->c[1]->val.id)) break;
+				t->type = Integer;
+				t->val.integer = 1;
+				free(t->c[0]->val.id), free(t->c[1]->val.id);
+				free(t->c[0]), free(t->c[1]);
+				t->c[0] = t->c[1] = NULL;
+				return 1;
+			}
+			else if(t->c[0]->type != Real || t->c[1]->type != Real) break;
+			t->type = Integer;
+			t->val.integer = t->c[0]->val.integer == t->c[1]->val.integer;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1; 
+		case FNNEQ:
+			if (t->c[0]->type == Float_var && t->c[1]->type == Float_var) {
+				if(strcmp(t->c[0]->val.id, t->c[1]->val.id)) break;
+				t->type = Integer;
+				t->val.integer = 0;
+				free(t->c[0]->val.id), free(t->c[1]->val.id);
+				free(t->c[0]), free(t->c[1]);
+				t->c[0] = t->c[1] = NULL;
+				return 1;
+			}
+			else if(t->c[0]->type != Real || t->c[1]->type != Real) break;
+			t->type = Integer;
+			t->val.integer = t->c[0]->val.integer != t->c[1]->val.integer;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1; 
+
+		case INEQ:
+			if (t->c[0]->type == Int_var && t->c[1]->type == Int_var) {
+				if(strcmp(t->c[0]->val.id, t->c[1]->val.id)) break;
+				t->type = Integer;
+				t->val.integer = 1;
+				free(t->c[0]->val.id), free(t->c[1]->val.id);
+				free(t->c[0]), free(t->c[1]);
+				t->c[0] = t->c[1] = NULL;
+				return 1;
+			}
+			else if(t->c[0]->type != Integer || t->c[1]->type != Integer) break;
+			t->type = Integer;
+			t->val.integer = t->c[0]->val.integer == t->c[1]->val.integer;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1; 
+		case INNEQ:
+			if (t->c[0]->type == Int_var && t->c[1]->type == Int_var) {
+				if(strcmp(t->c[0]->val.id, t->c[1]->val.id)) break;
+				t->type = Integer;
+				t->val.integer = 0;
+				free(t->c[0]->val.id), free(t->c[1]->val.id);
+				free(t->c[0]), free(t->c[1]);
+				t->c[0] = t->c[1] = NULL;
+				return 1;
+			}
+			else if(t->c[0]->type != Integer || t->c[1]->type != Integer) break;
+			t->type = Integer;
+			t->val.integer = t->c[0]->val.integer != t->c[1]->val.integer;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1; 
+
+
+		case SADD:
+			if(t->c[0]->type != Str || t->c[1]->type != Str) break;
+			t->type = Str;
+			t->val.str = calloc(strlen(t->c[0]->val.str)+strlen(t->c[1]->val.str)+1, sizeof(char));
+			strcat(t->val.str, t->c[0]->val.str);	
+			strcat(t->val.str+strlen(t->c[0]->val.str), t->c[1]->val.str);
+			free(t->c[0]->val.str); free(t->c[1]->val.str); 
+			free(t->c[0]); free(t->c[1]);
+			t->c[0] = NULL, t->c[1] = NULL;
+			return 1;		
+		case FDIV:
+			if(t->c[0]->type != Real || t->c[1]->type != Real) break;
+			t->type = Real;
+			t->val.real = t->c[0]->val.real / t->c[1]->val.real;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1;		
+		case FMUL:
+			if(t->c[0]->type != Real || t->c[1]->type != Real) break;
+			t->type = Real;
+			t->val.real = t->c[0]->val.real * t->c[1]->val.real;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1;		
+		case FMNS:
+			if(t->c[0]->type != Real || t->c[1]->type != Real) break;
+			t->type = Real;
+			t->val.real = t->c[0]->val.real - t->c[1]->val.real;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1;	
+		case FADD:
+			if(t->c[0]->type != Real || t->c[1]->type != Real) break;
+			t->type = Real;
+			t->val.real = t->c[0]->val.real + t->c[1]->val.real;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1;	
+		case IDIV:
+			if(t->c[0]->type != Integer || t->c[1]->type != Integer) break;
+			t->type = Integer;
+			t->val.integer = t->c[0]->val.integer / t->c[1]->val.integer;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1;		
+		case IMUL:
+			if(t->c[0]->type != Integer || t->c[1]->type != Integer) break;
+			t->type = Integer;
+			t->val.integer = t->c[0]->val.integer * t->c[1]->val.integer;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1;		
+		case IMNS:
+			if(t->c[0]->type != Integer || t->c[1]->type != Integer) break;
+			t->type = Integer;
+			t->val.integer = t->c[0]->val.integer - t->c[1]->val.integer;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1;	
+		case IADD:
+			if(t->c[0]->type != Integer || t->c[1]->type != Integer) break;
+			t->type = Integer;
+			t->val.integer = t->c[0]->val.integer + t->c[1]->val.integer;
+			free(t->c[0]), free(t->c[1]);
+			t->c[0] = t->c[1] = NULL;
+			return 1;
+	}
+	return optimize(t->c[0]) + optimize(t->c[1]) + optimize(t->c[2]); 
+}
 
 int exec_env(ast_t *t) {
+	while (optimize(t));
+	printf("\r");
 	ExecutionContext *context = create_execution_context();
 	push_scope(context->variable_stack);	
-	optimize(t);
-	printf("\r");
 	ex(t, context);	
 	pop_scope(context->variable_stack);
 	free_execution_context(context);
