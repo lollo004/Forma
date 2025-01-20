@@ -33,12 +33,13 @@ def max_len(list, index) {
 	return max(curr_len, max_len(list, index+1));
 }
 
-split: S * S => S[];
-def split(str, curr) {
+split: S * S * S => S[];
+def split(str, curr, last) {
 	:
 	return [curr], if str == "",
-	return [curr] + split(str[1:], ""), if str[0] == " ",
-	return split(str[1:], curr + str[0]), else
+	return [curr] + split(str[1:], "", " "), if (str[0] == " ") * (last != " "),
+	return split(str[1:], curr + str[0], str[0]), if str[0] != " ",
+	return split(str[1:], curr, str[0]), else
 	;
 }
 
@@ -72,7 +73,7 @@ def frame_border(max_len) {
 
 frame: S => N;
 def frame(sentence) {
-	let words: S[] = split(sentence, "");
+	let words: S[] = split(sentence, "", 1);
 	write "Words splitted\n";
 	let max_length: N = max_len(words, 0);
 	write "Found maximum word length: "; write max_length; write "\n";
