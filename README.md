@@ -178,7 +178,85 @@ hanoi(3, origin, destination, auxiliary);
 ```
 
 ## Advanced Topics
-todo - detailed description of code
+
+### Optimization of AST Tree
+Two kind of optimization occur before execution: constant evaluation, if statement evaluation.
+
+#### Costant evaluation
+Consider the following simple snippet of code:
+```
+let var: N = 2 + 7 * 3 - 2 + 6 + 2;
+write var;
+```
+Before:
+```
+├-- Node Type: 1000
+    ├-- Node Type: 1000
+    │   └-- Node Type: 1200
+    │       └-- Node Type: 2400
+    │           ├-- Node Type: 2400
+    │           │   ├-- Node Type: 2401
+    │           │   │   ├-- Node Type: 2400
+    │           │   │   │   ├-- Node Type: 2000
+    │           │   │   │   └-- Node Type: 2402
+    │           │   │   │       ├-- Node Type: 2000
+    │           │   │   │       └-- Node Type: 2000
+    │           │   │   └-- Node Type: 2000
+    │           │   └-- Node Type: 2000
+    │           └-- Node Type: 2000
+    └-- Node Type: 2600
+        └-- Node Type: 2100
+```
+After:
+```
+├-- Node Type: 1000
+    ├-- Node Type: 1000
+    │   └-- Node Type: 1200
+    │       └-- Node Type: 2000
+    └-- Node Type: 2600
+        └-- Node Type: 2100
+```
+#### If statement evaluation
+Consider the following simple snippet of code:
+```
+let var: N = 3 * 2 - 5;
+:
+	write "This is always executed!", if var == var,
+	write "This is never executed.", else
+;
+```
+Before:
+```
+├-- Node Type: 1000
+    ├-- Node Type: 1000
+    │   └-- Node Type: 1200
+    │       └-- Node Type: 2401
+    │           ├-- Node Type: 2402
+    │           │   ├-- Node Type: 2000
+    │           │   └-- Node Type: 2000
+    │           └-- Node Type: 2000
+    └-- Node Type: 1800
+        ├-- Node Type: 1000
+        │   └-- Node Type: 2603
+        │       └-- Node Type: 2002
+        ├-- Node Type: 1700
+        │   ├-- Node Type: 2100
+        │   └-- Node Type: 2100
+        └-- Node Type: 1000
+            └-- Node Type: 2603
+                └-- Node Type: 2002
+```
+After:
+```
+├-- Node Type: 1000
+    ├-- Node Type: 1000
+    │   └-- Node Type: 1200
+    │       └-- Node Type: 2000
+    └-- Node Type: 1000
+        └-- Node Type: 1000
+            └-- Node Type: 2603
+                └-- Node Type: 2002
+```
 
 ### Error Handling
 todo - detailed description of static analysis 
