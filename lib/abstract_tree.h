@@ -100,7 +100,7 @@ ast_t *node1(int type, ast_t *c1);
 ast_t *node2(int type, ast_t *c1, ast_t *c2); 
 ast_t *node3(int type, ast_t *c1, ast_t *c2, ast_t *c3);
 
-void print_ast(ast_t *t, int deep, const char *prefix); 
+void print_ast(ast_t *t, int deep, const char *prefix, int islast); 
 
 int optimize(ast_t *t);
 int exec_env(ast_t *t);

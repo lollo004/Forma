@@ -23,6 +23,31 @@ ast_t *node3(int type, ast_t *c1, ast_t *c2, ast_t *c3) {
         return ret;
 }
 
+void print_ast(ast_t *t, int deep, const char *prefix, int is_last) {
+    if (!t) return;
+
+    // Stampa il nodo corrente con il prefisso corretto
+    printf("%s%s-- Node Type: %d\n", prefix, is_last ? "└" : "├", t->type);
+
+    // Costruisce il nuovo prefisso
+    char new_prefix[256];
+    snprintf(new_prefix, sizeof(new_prefix), "%s%s", prefix, is_last ? "    " : "│   ");
+
+    // Conta il numero effettivo di figli
+    int count = 0;
+    for (int i = 0; i < MC; i++) {
+        if (t->c[i]) count++;
+    }
+
+    // Stampa i figli con il prefisso corretto
+    int child_index = 0;
+    for (int i = 0; i < MC; i++) {
+        if (t->c[i]) {
+            print_ast(t->c[i], deep + 1, new_prefix, ++child_index == count);
+        }
+    }
+}
+/*
 void print_ast(ast_t *t, int deep, const char *prefix) {
     if (!t) return;
 
@@ -45,7 +70,7 @@ void print_ast(ast_t *t, int deep, const char *prefix) {
         }
     }
 }
-
+*/
 int optimize(ast_t *t) {
 	if(!t) return 0;
 	switch(t->type){

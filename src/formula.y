@@ -17,9 +17,6 @@ extern void yyerror(const char *msg) {
 char *curr_func_node = NULL; // not beautiful
 StaticScopeStack *_staticstack;
 
-static int ASTDEBUG=0;
-#define ASTD if (ASTDEBUG)
-
 #define STATIC_STACK_SIZE 128
 
 %}
@@ -58,7 +55,7 @@ static int ASTDEBUG=0;
 %left '.'
 %%
 
-S:	STMTS { ASTD printf("\n"); ASTD print_ast($1, 0, ""); exec_env($1); }
+S:	STMTS { exec_env($1); }
  ;
 STMTS:	STMTS STMT ';' { $$ = node2(STMTS, $1, $2);}
      |  STMTS SASTMT ';' {} // no action on SA
