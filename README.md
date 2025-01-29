@@ -177,6 +177,7 @@ let auxiliary: S = "Auxiliary";
 
 hanoi(3, origin, destination, auxiliary);
 ```
+---
 
 ## Advanced Topics
 
@@ -260,12 +261,16 @@ After:
 ```
 
 ### Static Analysis
-todo - detailed description of static analysis 
+Static analysis makes sure that:
+- Function definition matches function declaration signature.
+- Function declaration ends with a return statement.
+- Variable exists in current scope on variable reference.
+- Function exists on function call.
 
 ---
 
 ## Contributing
-Feel free to fork or send pull requests! :)
+Feel free to fork and send pull requests! :)
 
 ---
 
