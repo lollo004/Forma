@@ -17,7 +17,8 @@ Formula is a functional programming language written for Compiler Construction e
    - [Input and Output](#input-and-output)
 4. [Example Programs](#example-programs)
 5. [Advanced Topics](#advanced-topics)
-   - [Error Handling](#error-handling)
+   - [Optimization](#optimization)
+   - [Static Analysis](#static-analysis)
 6. [Contributing](#contributing)
 7. [License](#license)
 
@@ -179,8 +180,8 @@ hanoi(3, origin, destination, auxiliary);
 
 ## Advanced Topics
 
-### Optimization of AST Tree
-Two kind of optimization occur before execution: constant evaluation, if statement evaluation.
+### Optimization
+Two kinds of optimization on AST occur before execution: constant evaluation, if statement evaluation.
 
 #### Costant evaluation
 Consider the following simple snippet of code:
@@ -258,7 +259,7 @@ After:
                 └-- Node Type: 2002
 ```
 
-### Error Handling
+### Static Analysis
 todo - detailed description of static analysis 
 
 ---
