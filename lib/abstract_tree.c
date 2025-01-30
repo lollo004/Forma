@@ -310,6 +310,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			return ex(t->c[0],e), ex(t->c[1],e);
 
 		case RANDOM:
+			srand(time(NULL));
 			ret.val.integer = ex(t->c[0],e).val.integer + rand() % ex(t->c[1],e).val.integer;
 			return ret;
 	

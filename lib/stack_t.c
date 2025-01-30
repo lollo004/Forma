@@ -1,8 +1,5 @@
 #include <stack_t.h>
 
-#define HASHMAP_SIZE 128
-#define FCALL_STACK_SIZE 256
-
 // Hash functions
 unsigned int hash(const char *key) {
     unsigned int hash = 0;

@@ -8,6 +8,7 @@
 #include <abstract_tree.h>
 
 #define HASHMAP_SIZE 128
+#define FCALL_STACK_SIZE 4096
 
 typedef struct ast ast_t;
 

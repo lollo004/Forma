@@ -1,0 +1,20 @@
+% Ackermann is a known method to test functional languages capability of going deep in function calls 
+
+ackermann: N * N => N;
+def ackermann(m, n){
+    :
+        return n + 1, if m == 0,
+        return ackermann(m-1, 1), if n == 0,
+        return ackermann(m-1, ackermann(m, n-1)), else
+	;
+}
+
+write "acherman(0, 0) = "; write ackermann(0, 0); write "\n";
+write "acherman(1, 1) = "; write ackermann(1, 1); write "\n";
+write "acherman(2, 2) = "; write ackermann(2, 2); write "\n";
+write "acherman(3, 3) = "; write ackermann(3, 3); write "\n";
+write "acherman(3, 5) = "; write ackermann(3, 5); write "\n";
+write "acherman(3, 6) = "; write ackermann(3, 6); write "\n";
+
+% This test makes the FCallStack overflow - don't try, trust me.
+% write "acherman(3, 8) = "; write ackermann(3, 8); write "\n"; 

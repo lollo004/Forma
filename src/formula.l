@@ -29,7 +29,7 @@ STRING_ESCAPE        	\\\"
 BINARY       		0b[01]+
 OCTAL        		0o[0-7]+
 HEXADECIMAL  		0x[0-9a-fA-F]+
-IL			i\[\]
+IL			"i\[\]"|"n\[\]"
 FL			f\[\]
 CL			c\[\]
 SL			s\[\]
