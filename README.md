@@ -16,6 +16,7 @@ Formula is a functional programming language written for Compiler Construction e
    - [Functions](#functions)
    - [Input and Output](#input-and-output)
 4. [Example Programs](#example-programs)
+   - [Benchmark test](#benchmark-test)
 5. [Advanced Topics](#advanced-topics)
    - [Optimization](#optimization)
    - [Static Analysis](#static-analysis)
@@ -156,7 +157,9 @@ write input_string + "\n";
 
 ## Example Programs
 All example programs can also be found in `examples/` directory.
-Tower of Hanoi - Example:
+
+### Tower of Hanoi:
+A tipical problem trivially solved by Recursion.
 ```
 hanoi: N * S * S * S => N;
 
@@ -177,6 +180,30 @@ let auxiliary: S = "Auxiliary";
 
 hanoi(3, origin, destination, auxiliary);
 ```
+
+### Benchmark Test
+Ackermann function is made to test the manage of the stack by a programming language.
+It can be executed using different parameters to text gradually the programming language!
+- ackermann(3, 5) is a stack depth test and is already considered as a very good achievement.
+- ackermann(4, 3) causes even the best programming languages out there to CRASH.
+```
+ackermann: N * N => N;
+def ackermann(m, n){
+    :
+        return n + 1, if m == 0,
+        return ackermann(m-1, 1), if n == 0,
+        return ackermann(m-1, ackermann(m, n-1)), else
+	;
+}
+write "acherman(3, 3) = "; write ackermann(3, 3); write "\n"; % easy
+write "acherman(3, 5) = "; write ackermann(3, 5); write "\n"; % medium
+write "acherman(3, 6) = "; write ackermann(3, 6); write "\n"; % medium+
+
+% This test makes the FCallStack overflow, we reached out maximum!
+% write "acherman(3, 8) = "; write ackermann(3, 8); write "\n"; % hard
+```
+Note: a solution to this problem is to applying TCO (Tail Call Optimization) to avoid stack overflow. Formula doesn't yet, but it's an improvement path!
+
 ---
 
 ## Advanced Topics
@@ -261,11 +288,13 @@ After:
 ```
 
 ### Static Analysis
-Static analysis makes sure that:
+Static Analysis is used here to find as much errors as possible at compile time (AST Construction) and give smart errors.
+My static analysis support ensures that:
 - Function definition matches function declaration signature.
 - Function declaration ends with a return statement.
 - Variable exists in current scope on variable reference.
 - Function exists on function call.
+Please feel free to try out yourself if errors are recognized before execution or not!
 
 ---
 
