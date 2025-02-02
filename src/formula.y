@@ -300,7 +300,7 @@ CNUM:	FNTERM imgr '+' FNTERM { $$ = node2(CNUMADD, $1, $4); }
 
 
 FNTERM: FNTERM '-' FNTERM { $$=node2(FMNS, $1, $3); }
-      |	'-' FNTERM { ast_t *t = node0(real); t->val.real=0; $$ = node2(FMNS, t, $2); }
+      |	'-' FNTERM { ast_t *t = node0(Real); t->val.real=0; $$ = node2(FMNS, t, $2); }
       |	'+' FNTERM { $$ = $2; }
       | FNTERM '+' FNTERM { $$=node2(FADD, $1, $3); }
       |	FNTERM '*' FNTERM { $$=node2(FMUL, $1, $3); }

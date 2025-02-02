@@ -286,6 +286,7 @@ int optimize(ast_t *t) {
 }
 
 int exec_env(ast_t *t) {
+	// print_ast(t, 0, "", 0);
 	while (optimize(t));
 	printf("\r");
 	ExecutionContext *context = create_execution_context();
@@ -415,7 +416,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			printf("%lf", ex(t->c[0],e).val.real); return ret;
 		case CWRITE:
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx;
-			printf("%.2lf %.2lfi", creal(ret.val.cmpx), cimag(ret.val.cmpx)); return ret;
+			printf("%.2lf%+.2lfi", creal(ret.val.cmpx), cimag(ret.val.cmpx)); return ret;
 		case SWRITE:
 			printf("%s", ex(t->c[0],e).val.str); return ret;
 

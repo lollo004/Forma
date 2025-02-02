@@ -1,0 +1,73 @@
+% Define absolute value function for real numbers
+abs: R => R;
+def abs(num){
+    % If the number is negative, return its negation; otherwise, return the number itself
+	: return -num, if num < 0.0;
+	return num;
+}
+
+% Declare recursive helper functions for cosine and sine using Taylor series expansion
+recursive_cos: R * R * R * R => R;
+recursive_sin: R * R * R * R => R;
+
+% Declare cosine and sine functions
+cos: R => R;
+sin: R => R;
+
+% Recursive function to compute cosine(x) using its Taylor series expansion
+def recursive_cos(x, n, current_term, total){
+    let tolerance: R = 0.000001;
+	: return total, if abs(current_term) < tolerance;
+
+    let next_term: R = -current_term * x * x / ((2.0 * n + 1.0) * (2.0 * n + 2.0));
+    
+    return recursive_cos(x, n + 1.0, next_term, total + next_term);
+}
+
+% Cosine function that initializes the Taylor series recursion for cosine(x)
+def cos(x){
+    return recursive_cos(x, 0.0, 1.0, 1.0);
+}
+
+% Recursive function to compute sine(x) using its Taylor series expansion
+def recursive_sin(x, n, current_term, total){
+    let tolerance: R = 0.000001;
+	: return total, if abs(current_term) < tolerance;
+
+    let next_term: R = - current_term * x * x / ((2.0 * n + 2.0) * (2.0 * n + 3.0));
+	
+    return recursive_sin(x, n + 1.0, next_term, total + next_term);
+}
+
+% Sine function that initializes the Taylor series recursion for sine(x)
+def sin(x){
+    return recursive_sin(x, 0.0, x, x);
+}
+
+% Define a power function to raise a complex number to a real exponent recursively
+pow: C * R => C;
+def pow(complex, n) {
+    % complex number multiplicative identity (0.0 I + 1.0)
+	: return 0.0 I + 1.0, if n == 0.0;
+    return complex * pow(complex, n-1.0);
+}
+
+% Define the input angle (in radians) and exponent n
+let theta: R = 2.2;
+let n: R = 2.0;
+
+% Construct a complex number using sine and cosine of theta
+let z: C = sin(theta) I + cos(theta);
+
+% Compute z raised to the power n using the recursive power function
+let z_pow: C = pow(z, n);
+
+% Calculate the expected result using De Moivre's theorem
+% Expected result (in standard form) is cos(n*theta) + i*sin(n*theta)
+let expected: C = sin(n * theta) I + cos(n * theta);
+
+% Print the input values and the computed results
+write "theta (rad) = "; write theta; write "\n";
+write "exponent = "; write n; write "\n";
+write "z^n = "; write z_pow; write "\n";
+write "cos(n*theta) + sin(n*theta)i = "; write expected; write "\n";

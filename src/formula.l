@@ -47,8 +47,8 @@ ID           		[A-Za-z_][A-Za-z0-9_]*
 NL			\n
 NEWLINE              	\\n
 SPACE			" "
-ANY_STR			[^\n^\t]{1}
-ANY_CHARACTER        	[^ ^\n^\t]{1}
+ANY_STR			[^\n\t]{1}
+ANY_CHARACTER        	[^ \n\t]{1}
 
 %option noyywrap noinput nounput yylineno
 %%
@@ -165,7 +165,7 @@ ANY_CHARACTER        	[^ ^\n^\t]{1}
 <COMMENT_MODE>{NL} {
     BEGIN(INITIAL); // Exit COMMENT_MODE on newline
 }
-<COMMENT_MODE>{ANY_CHARACTER} {
+<COMMENT_MODE>{ANY_STR} {
     // Ignore all characters within a comment
 }
 
