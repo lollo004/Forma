@@ -157,9 +157,15 @@ write input_string + "\n";
 
 ## Example Programs
 All example programs can also be found in `examples/` directory.
+- de_moivre: Demostration of complex numbers support by applying De Moivre theorem.
+- ackermann: Benchmark test for recursion support of a programming language.
+- hanoi: Tower of Hanoi problem. 
+- frame: Draw a frame based on an input sequence.
+- rock_paper_scissors_lizard_spock: Implementation of the extended classical game, inspired from Star Trek series.
+- hello_world
 
 ### Tower of Hanoi:
-A tipical problem trivially solved by Recursion.
+A tipical problem trivially solved elegantly by Recursion with Formula.
 ```
 hanoi: N * S * S * S => N;
 
@@ -180,6 +186,7 @@ let auxiliary: S = "Auxiliary";
 
 hanoi(3, origin, destination, auxiliary);
 ```
+More interesting and complex examples in the  `examples/` directory!
 
 ### Benchmark Test
 Ackermann function is made to test the manage of the stack by a programming language.
@@ -289,11 +296,13 @@ After:
 
 ### Static Analysis
 Static Analysis is used here to find as much errors as possible at compile time (AST Construction) and give smart errors.
-My static analysis support ensures that:
+On Formula, static analysis support ensures that:
+- Function is declared before definition.
 - Function definition matches function declaration signature.
 - Function declaration ends with a return statement.
 - Variable exists in current scope on variable reference.
 - Function exists on function call.
+- No arithmetic type conflicts exist.
 Please feel free to try out yourself if errors are recognized before execution or not!
 
 ---
