@@ -8,10 +8,9 @@
 #include <math.h>
 #include <time.h>
 
-#include <list_t.h>
-#include <stack_t.h>
-
-typedef struct ExecutionContext ExecutionContext;
+#include "list_t.h"
+#include "types_t.h"
+#include "stack_t.h"
 
 enum {	STMTS = 1000, 
 	FUN=1100, FUNDEC=1098, FUNSIG=1099, FPARAMS=1101, FPARAM=1102, 
@@ -49,51 +48,6 @@ enum {	STMTS = 1000,
 	Intlist_fun=2210, Floatlist_fun=2211,Strlist_fun=2212,Cmpxlist_fun=2213,
 	New_id=2300
 };
-
-#define MC 3
-
-struct ast {
-    int type;
-    union {
-        int integer;
-	SymbolType set;
-	double real;
-        double _Complex compx;
-        char *str;
-        char *id;
-	IntLinkedList *ilist;
-        DoubleLinkedList *flist;
-        ComplexLinkedList *clist;
-        StringLinkedList *slist;
-	void *any;
-    } val;
-    struct ast *c[MC];
-};
-typedef struct ast ast_t;
-
-struct slice {
-	int a;
-	int b;
-};
-typedef struct slice slice_t;
-
-struct exval {
-    union {
-        int integer;
-	SymbolType set;
-	double real;
-        double _Complex cmpx;
-        char *str;
-        char *id;
-	IntLinkedList *ilist;
-        DoubleLinkedList *flist;
-        ComplexLinkedList *clist;
-        StringLinkedList *slist;
-    	slice_t slice;
-	void *any;
-    } val;
-};
-typedef struct exval ex_t; 
 
 ast_t *node0(int type); 
 ast_t *node1(int type, ast_t *c1); 
