@@ -5,12 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <abstract_tree.h>
+#include "types_t.h"
 
 #define HASHMAP_SIZE 128
 #define FCALL_STACK_SIZE 4096
-
-typedef struct ast ast_t;
 
 // Function map entry structure
 typedef struct FunctionEntry {
@@ -88,12 +86,13 @@ typedef struct ReturnState {
     void *return_value;
 } ReturnState;
 
-typedef struct ExecutionContext {
+struct ExecutionContext {
     VariableStack *variable_stack;
     FunctionMap *function_map;
     FCallStack *call_stack;
     ReturnState *return_state;
-} ExecutionContext;
+};
+typedef struct ExecutionContext ExecutionContext;
 
 void set_return_state(ExecutionContext *context, void *return_value);
 bool is_returning(ExecutionContext *context);

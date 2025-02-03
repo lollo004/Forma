@@ -130,7 +130,9 @@ ANY_CHARACTER        	[^ \n\t]{1}
 {WRITE} { return _write; }
 
 {ID} {
-    	// Check if the ID exists in the current scope or above
+    
+    #include <string.h>    	
+    // Check if the ID exists in the current scope or above
 	Symbol *id = find_static_symbol(_staticstack, yytext);	
 	yylval.id = strdup(yytext);
 	if (!id)return new_id;
