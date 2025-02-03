@@ -42,15 +42,12 @@ Features Overview:
 
 ### Installation
 #### Install binaries from release channel
-- There are pre-built binaries for Linux, MacOS and Windows. Note: tested on linux only.
+- It is possible to run formula only on Linux. You can download pre-built binaries on release channel.
 
 #### Building from source
 Required Packages:
 - clang, flex, bison, make
-- mingw-w64 (Linux only, for Windows cross-compilation)
-- llvm (macOS only, recommended over system Clang)
-- mingw-w64-clang-x86_64 (Windows only, for native compilation in MSYS2)
-- Run `make release` to compile binaries and generate executable for host platform
+- Run `make release` to compile binaries and generate executable
 - Run `./formula examples/hello_world`
 
 ### Hello, World!
@@ -198,8 +195,8 @@ More interesting and complex examples in the  `examples/` directory!
 ### Benchmark Test
 Ackermann function is made to test the manage of the stack by a programming language.
 It can be executed using different parameters to text gradually the programming language!
-- ackermann(3, 5) is a stack depth test and is already considered as a very good achievement.
-- ackermann(4, 3) causes even the best programming languages out there to CRASH.
+- ackermann(3, 8) is a stack depth test and is already considered as a very good achievement.
+- ackermann(4, 1) causes even the best programming languages out there to CRASH.
 ```
 ackermann: N * N => N;
 def ackermann(m, n){
@@ -209,14 +206,15 @@ def ackermann(m, n){
         return ackermann(m-1, ackermann(m, n-1)), else
 	;
 }
-write "acherman(3, 3) = "; write ackermann(3, 3); write "\n"; % easy
-write "acherman(3, 5) = "; write ackermann(3, 5); write "\n"; % medium
-write "acherman(3, 6) = "; write ackermann(3, 6); write "\n"; % medium+
+% Note: run test using release build of formula
+write "acherman(3, 6) = "; write ackermann(3, 6); write "\n"; % medium
+write "acherman(3, 7) = "; write ackermann(3, 7); write "\n"; % medium+
+write "acherman(3, 8) = "; write ackermann(3, 8); write "\n"; % hard
 
 % This test makes the FCallStack overflow, we reached out maximum!
-% write "acherman(3, 8) = "; write ackermann(3, 8); write "\n"; % hard
+% write "acherman(4, 1) = "; write ackermann(4, 1); write "\n"; % very hard
 ```
-Note: a solution to this problem is to applying TCO (Tail Call Optimization) to avoid stack overflow. Formula doesn't yet, but it's an improvement path!
+Note: a solution to this problem is to apply TCO (Tail Call Optimization) to avoid stack overflow. Formula doesn't yet, but it's an improvement path!
 
 ---
 
