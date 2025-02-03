@@ -325,7 +325,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			return ret;
 		case CRET:
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx;
-    			set_return_state(e, alloc_t(&ret.val.cmpx, sizeof(_Complex)));	
+    			set_return_state(e, alloc_t(&ret.val.cmpx, sizeof(_Complex double)));	
 			return ret;
 		case SRET:
     			set_return_state(e, ex(t->c[0],e).val.str);	
@@ -429,6 +429,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			ret.val.any = alloc_t(&ret.val.real, sizeof(double));
 			return ret;
 		case SREAD:
+			;
 			char _s[255] = {0};
 			if (fgets(_s, sizeof(_s), stdin) != NULL) {
 				_s[strcspn(_s, "\n")] = '\0';
@@ -497,7 +498,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			push_scope(e->variable_stack);
 			ex(function_map_get(e->function_map, t->val.id),e);
 			pop_scope(e->variable_stack); 
-			ret.val.cmpx = *(_Complex *)get_return_value(e);
+			ret.val.cmpx = *(_Complex double *)get_return_value(e);
 			reset_return_state(e);
 			return ret;
 		case FFC:
@@ -529,7 +530,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			return ret;
 		case CFARG:
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx;
-			fcall_stack_push(e->call_stack, alloc_t(&ret.val.cmpx, sizeof(_Complex)));
+			fcall_stack_push(e->call_stack, alloc_t(&ret.val.cmpx, sizeof(_Complex double)));
 			return ret;
 		case SFARG:
 			ret.val.str = ex(t->c[0],e).val.str;
@@ -565,7 +566,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			variable_stack_insert(e->variable_stack, t->val.id, ex(t->c[0],e).val.str, false); return ret;
 		case CVDEC:
 			ret.val.cmpx = ex(t->c[0],e).val.cmpx;
-			variable_stack_insert(e->variable_stack, t->val.id, alloc_t(&ret.val.cmpx, sizeof(_Complex)), false); return ret;
+			variable_stack_insert(e->variable_stack, t->val.id, alloc_t(&ret.val.cmpx, sizeof(_Complex double)), false); return ret;
 		case FVDEC:
 			ret.val.real = ex(t->c[0],e).val.real;
 			variable_stack_insert(e->variable_stack, t->val.id, alloc_t(&ret.val.real, sizeof(double)), false);
@@ -636,6 +637,7 @@ ex_t ex(ast_t *t, ExecutionContext *e) {
 			return ret;
 
 		case SADD:
+			;
 			char *p1=ex(t->c[0],e).val.str,*p2=ex(t->c[1],e).val.str;
 			ret.val.str = calloc(strlen(p1)+strlen(p2)+1, sizeof(char));
 			strcat(ret.val.str, p1);	
@@ -709,7 +711,7 @@ case SSLICE: {
 			ret.val.real = *(double *)double_list_get_reference(ex(t->c[0],e).val.flist, ex(t->c[1],e).val.integer);
 			return ret;
 		case CSLICEI:
-			ret.val.cmpx = *(_Complex *)complex_list_get_reference(ex(t->c[0],e).val.clist, ex(t->c[1],e).val.integer);
+			ret.val.cmpx = *(_Complex double *)complex_list_get_reference(ex(t->c[0],e).val.clist, ex(t->c[1],e).val.integer);
 			return ret;
 		case SSLICEI:
 			ret.val.str = (char *)string_list_get_copy(ex(t->c[0],e).val.slist, ex(t->c[1],e).val.integer);
@@ -775,7 +777,7 @@ case SSLICE: {
 		case Intlist_var:
 			ret.val.ilist = (IntLinkedList *)variable_stack_get(e->variable_stack, t->val.id); return ret;
 		case Cmpx_var:
-			ret.val.cmpx = *( (_Complex *)variable_stack_get(e->variable_stack, t->val.id) ); return ret;
+			ret.val.cmpx = *( (_Complex double *)variable_stack_get(e->variable_stack, t->val.id) ); return ret;
 		case Str_var:
 			ret.val.str = (char *)variable_stack_get(e->variable_stack, t->val.id); return ret;
 		case Float_var:

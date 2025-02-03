@@ -1,4 +1,4 @@
-#include <stack_t.h>
+#include "stack_t.h"
 
 // Hash functions
 unsigned int hash(const char *key) {
