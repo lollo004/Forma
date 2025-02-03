@@ -17,4 +17,4 @@ let origin: S = "Source";
 let destination: S = "Destination";
 let auxiliary: S = "Auxiliary";
 
-hanoi(100, origin, destination, auxiliary);
+hanoi(3, origin, destination, auxiliary);
