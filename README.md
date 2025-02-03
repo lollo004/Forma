@@ -41,10 +41,17 @@ Features Overview:
 ## Getting Started
 
 ### Installation
+#### Install binaries from release channel
+- There are pre-built binaries for Linux, MacOS and Windows. Note: tested on linux only.
 
-- Packages required: gcc, make, flex, bison.
-- Run `make` to compile binaries and generate compiler/executor. 
-- Run `./formula examples/hello_world` 
+#### Building from source
+Required Packages:
+- clang, flex, bison, make
+- mingw-w64 (Linux only, for Windows cross-compilation)
+- llvm (macOS only, recommended over system Clang)
+- mingw-w64-clang-x86_64 (Windows only, for native compilation in MSYS2)
+- Run `make release` to compile binaries and generate executable for host platform
+- Run `./formula examples/hello_world`
 
 ### Hello, World!
 Hello, World! example in Formula:
