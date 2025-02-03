@@ -42,7 +42,7 @@ Features Overview:
 
 ### Installation
 #### Install binaries from release channel
-- It is possible to run formula only on Linux. You can download pre-built binaries on release channel.
+- It is possible to run formula only on Linux. You can download pre-built binaries on [release channel](https://github.com/lollo004/Formula/releases).
 
 #### Building from source
 Required Packages:
